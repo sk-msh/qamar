@@ -1415,6 +1415,7 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
     <button class="sp-tab" onclick="spTab('cards',this)">🃏 الكروت</button>
     <button class="sp-tab" onclick="spTab('subs',this)">📦 الخدمات</button>
     <button class="sp-tab" onclick="spTab('contact',this)">📞 التواصل</button>
+    <button class="sp-tab" onclick="spTab('customers',this)">👥 الزبائن</button>
     <button class="sp-tab" onclick="spTab('backup',this)">💾 النسخ</button>
   </div>
   <div class="sp-content">
@@ -1466,6 +1467,18 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
           </div>
         </div>
       </div>
+      </div>
+      <div class="sp-block" style="margin-top:16px;border:1.5px solid rgba(0,229,255,.25);background:rgba(0,229,255,.04);border-radius:14px;padding:16px">
+        <div class="sp-block-title" style="color:var(--cyan)">🔗 رابط المتجر للزبائن</div>
+        <div class="sp-intro" style="margin:6px 0 12px">أرسل هذا الرابط للزبون — يفتح المتجر بدون إعدادات، وأي تعديل تجريه يظهر له تلقائياً عند إعادة فتح الرابط.</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="si" id="share-link-inp" type="text" readonly style="flex:1;font-size:.75rem;direction:ltr;text-align:left;cursor:pointer;min-width:0" onclick="this.select()" value="">
+          <button class="sbn" onclick="copyShareLink()" style="padding:8px 16px;white-space:nowrap;flex-shrink:0">📋 نسخ</button>
+          <button class="sbn" onclick="openShareWhatsapp()" style="padding:8px 14px;white-space:nowrap;flex-shrink:0;background:rgba(0,230,118,.15);border-color:rgba(0,230,118,.4);color:var(--green)">💬 إرسال واتساب</button>
+        </div>
+        <div style="margin-top:10px">
+          <span style="font-size:.72rem;color:var(--muted)">☁️ البيانات تُزامن مع السحابة تلقائياً عند كل حفظ — الزبون يرى التعديلات فور فتح رابطه</span>
+        </div>
       </div>
     </div><!-- end panel-general -->
 
@@ -1629,6 +1642,25 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
             <div class="sf"><label class="sl">✈️ تيليغرام</label><input class="si" id="sc-tg" type="url" placeholder="https://t.me/username" oninput="liveSocial()"></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div class="sp-panel" id="panel-customers">
+      <div class="sp-intro">بيانات الزبائن المسجّلين من صفحة الترحيب. يتم الحفظ تلقائياً وإزالة التكرار برقم الواتساب.</div>
+      <div class="sp-block">
+        <div class="sp-block-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <span>👥 قائمة الزبائن</span>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span id="cust-count" style="font-size:.75rem;color:var(--cyan);background:rgba(0,229,255,.08);padding:3px 10px;border-radius:20px;border:1px solid rgba(0,229,255,.2)">0 زبون</span>
+            <button class="sbn" style="padding:6px 14px;font-size:.78rem" onclick="exportCustomers()">📥 تصدير CSV</button>
+            <button class="sbd" style="padding:6px 14px;font-size:.78rem" onclick="clearAllCustomers()">🗑️ حذف الكل</button>
+          </div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <input class="si" id="cust-search" type="text" placeholder="🔍 بحث بالاسم أو الرقم..." oninput="renderCustomerList()" style="flex:1;font-size:.82rem">
+        </div>
+        <div id="cust-list" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;padding-left:4px"></div>
       </div>
     </div>
 
@@ -1820,6 +1852,122 @@ var cosmicBadgeType = 'popular';
 var cosmicCur = 'د.ل';
 var cosmicRAFs = {};
 var STORE_KEY = 'qamar_v3';
+
+/* ════════════════════════
+   SUPABASE CONFIG
+════════════════════════ */
+var SB_URL = 'https://uzqkfulbdeuzcqqnphwt.supabase.co';
+var SB_KEY = 'sb_publishable_Zb130VooEdAkHrlFMSeLaw_CHy7q-Oq';
+var SB_TABLE = 'qamar_config';
+var SB_ROW_ID = 'main';
+var ADMIN_PASS = 'qamar2025admin';
+
+/* كشف وضع الأدمن: فقط عبر #admin في الرابط */
+var IS_ADMIN = (function(){
+  try{
+    if(window.location.hash==='#admin'||window.location.search.indexOf('admin')>=0) return true;
+  }catch(e){}
+  return false;
+})();
+
+async function sbFetch(path, opts){
+  var res = await fetch(SB_URL+'/rest/v1/'+path, Object.assign({
+    headers:{
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer '+SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    }
+  }, opts));
+  return res;
+}
+
+async function pushToCloud(data){
+  try{
+    await sbFetch(SB_TABLE+'?id=eq.'+SB_ROW_ID, {
+      method:'PATCH',
+      body: JSON.stringify({ data: data, updated_at: new Date().toISOString() })
+    });
+  }catch(e){ console.warn('Cloud push failed',e); }
+}
+
+async function pullFromCloud(){
+  try{
+    var res = await sbFetch(SB_TABLE+'?id=eq.'+SB_ROW_ID+'&select=data,updated_at');
+    if(!res.ok) return null;
+    var rows = await res.json();
+    if(rows&&rows.length&&rows[0].data&&Object.keys(rows[0].data).length) return rows[0].data;
+  }catch(e){ console.warn('Cloud pull failed',e); }
+  return null;
+}
+
+function applyStateObj(st){
+  try{
+    if(st.DATA&&st.DATA.length) DATA=st.DATA;
+    if(st.CL) for(var k in st.CL) CL[k]=st.CL[k];
+    var s=st.settings||{};
+    function sv(id,val){ var el=G(id); if(el&&val!==undefined&&val!=='') el.value=val; }
+    if(IS_ADMIN){
+      sv('sg-name',s.siteName); sv('sg-desc',s.footerDesc); sv('sg-offer',s.offerText);
+      sv('sh-badge',s.badge); sv('sh-tagline',s.tagline); sv('sh-btn1',s.btn1); sv('sh-btn2',s.btn2); sv('sh-c1',s.c1); sv('sh-c3',s.c3);
+      sv('sc-wa',s.waPhone); sv('sc-ctatitle',s.ctaTitle); sv('sc-ctasub',s.ctaSub);
+      sv('sg-h1size',s.h1); sv('sg-body',s.body); sv('sg-cattitle',s.cat); sv('sg-sech2',s.sec);
+      sv('sc-pur',s.pur); sv('sc-pink',s.pink); sv('sc-cyan',s.cyan);
+      sv('ct-ns',s.ctNS); sv('ct-nc',s.ctNC); sv('ct-cs',s.ctCS); sv('ct-cc',s.ctCC);
+      sv('ct-ds',s.ctDS); sv('ct-dc',s.ctDC); sv('ct-fs',s.ctFS); sv('ct-fc',s.ctFC);
+      sv('ct-ps',s.ctPS); sv('ct-pc',s.ctPC); sv('ct-us',s.ctUS); sv('ct-uc',s.ctUC);
+      sv('ct-os',s.ctOS); sv('ct-oc',s.ctOC); sv('ct-bs',s.ctBS); sv('ct-bc',s.ctBC);
+      sv('ct-bl',s.ctBL); sv('ct-fl',s.ctFL);
+      sv('cc-accent',s.ccA); sv('cc-footer',s.ccF); sv('cc-bar',s.ccB); sv('cc-pclr',s.ccP);
+      sv('cc-ps',s.ccPS); sv('cc-btn',s.ccBT); sv('cc-bs',s.ccBS); sv('cc-plt',s.ccPLT);
+      sv('cc-bdx',s.ccBdX); sv('cc-ns',s.ccNS); sv('cc-scale',s.ccSc);
+      if(s.socTw){ sv('sc-tw',s.socTw); if(G('soc-tw')) G('soc-tw').href=s.socTw; }
+      if(s.socIg){ sv('sc-ig',s.socIg); if(G('soc-ig')) G('soc-ig').href=s.socIg; }
+      if(s.socSn){ sv('sc-sn',s.socSn); if(G('soc-sn')) G('soc-sn').href=s.socSn; }
+      if(s.socTg){ sv('sc-tg',s.socTg); if(G('soc-tg')) G('soc-tg').href=s.socTg; }
+      if(G('cc-ns')&&s.ccNS) G('cc-ns-v').textContent=s.ccNS+'px';
+      if(G('cc-ps')&&s.ccPS) G('cc-ps-v').textContent=s.ccPS+'px';
+      if(G('cc-bs')&&s.ccBS) G('cc-bs-v').textContent=s.ccBS+'px';
+      if(G('cc-scale')&&s.ccSc) G('cc-scale-v').textContent=s.ccSc+'%';
+      if(s.ccBdT){ cosmicBadgeType=s.ccBdT; sv('cc-bdt',s.ccBdT); }
+      if(typeof s.ccBdV!=='undefined'){ cosmicBadgeVisible=s.ccBdV; G('cc-bdv-track').classList.toggle('on',s.ccBdV); G('cc-bdv-lbl').textContent=s.ccBdV?'مفعّل':'معطّل'; }
+      if(s.ccCur){ cosmicCur=s.ccCur; sv('cc-cur',s.ccCur); }
+      if(typeof s.yearlyDiscount !== 'undefined'){
+        yearlyDiscount = parseInt(s.yearlyDiscount)||20;
+        if(G('sg-yd')){ G('sg-yd').value=yearlyDiscount; }
+        if(G('sg-yd-num')){ G('sg-yd-num').value=yearlyDiscount; }
+        if(G('v-yd')){ G('v-yd').textContent=yearlyDiscount+'%'; }
+        updateSavePct();
+      }
+      if(typeof s.ydBarEnabled !== 'undefined'){
+        ydBarEnabled = s.ydBarEnabled;
+        if(G('yd-bar-track')) G('yd-bar-track').classList.toggle('on', ydBarEnabled);
+        if(G('yd-bar-lbl')) G('yd-bar-lbl').textContent = ydBarEnabled ? 'مفعّل' : 'معطّل';
+      }
+    }
+    if(s.pur) document.documentElement.style.setProperty('--pur',s.pur);
+    if(s.pink) document.documentElement.style.setProperty('--pink',s.pink);
+    if(s.cyan) document.documentElement.style.setProperty('--cyan',s.cyan);
+    if(s.bg){ document.documentElement.style.setProperty('--bg',s.bg); document.body.style.background=s.bg; }
+    if(s.bgImg&&s.bgImg!=='none'&&s.bgImg!==''){ var ov=G('bg-overlay'); ov.style.backgroundImage=s.bgImg; ov.style.display='block'; ov.style.opacity=s.bgOp||'0.4'; }
+    if(s.bgOpR){ if(IS_ADMIN){ sv('bg-op',s.bgOpR); G('v-bgop').textContent=s.bgOpR+'%'; } }
+    if(s.waPhone){ WA_LINK='https://wa.me/'+s.waPhone.replace(/\D/g,''); var wf=G('wa-float'); if(wf) wf.href=WA_LINK; }
+    if(s.siteName){ var n=s.siteName; G('nav-logo-text').textContent=' '+n; G('hero-logo-big').textContent='☽ '+n; G('ft-brand-name').textContent='☽ '+n; G('ft-copy-name').textContent=n; }
+    if(s.footerDesc) G('ft-desc').textContent=s.footerDesc;
+    if(s.offerText) G('offer-txt').innerHTML=s.offerText;
+    if(s.badge) G('hero-badge-txt').textContent=s.badge;
+    if(s.tagline) G('hero-tagline').textContent=s.tagline;
+    if(s.btn1) G('btn-browse').textContent=s.btn1;
+    if(s.btn2) G('btn-how').textContent=s.btn2;
+    if(s.ctaTitle) G('cta-title').textContent=s.ctaTitle;
+    if(s.ctaSub) G('cta-sub').textContent=s.ctaSub;
+    if(s.h1) liveH1(s.h1);
+    if(s.body) liveBody(s.body);
+    if(s.cat) liveCat(s.cat);
+    if(s.sec) liveSec(s.sec);
+    setTimeout(applyCardText, 100);
+  }catch(e){ console.warn('applyState error',e); }
+}
 var COSMIC_ICONS = {popular:'😍',trending:'🔥',new:'✨',offer:'🏷️',most:'⭐'};
 
 /* ════════════════════════
@@ -2698,7 +2846,7 @@ function updateCosmicScale(v){ G('cc-scale-v').textContent=v+'%'; var g=G('grid'
 function openSettings(){
   var b=G('settings-btn'); b.classList.add('spin'); setTimeout(function(){ b.classList.remove('spin'); },600);
   G('settings-page').classList.add('open'); document.body.style.overflow='hidden';
-  buildSubList(); updateLSI();
+  buildSubList(); updateLSI(); initShareLink();
 }
 function closeSettings(){ G('settings-page').classList.remove('open'); document.body.style.overflow=''; }
 function spTab(name, el){
@@ -2708,6 +2856,7 @@ function spTab(name, el){
   var p=G('panel-'+name); if(p) p.classList.add('on');
   if(name==='subs') buildSubList();
   if(name==='backup') updateLSI();
+  if(name==='customers') renderCustomerList();
 }
 
 /* ════════════════════════
@@ -2911,6 +3060,7 @@ function duplicateSub(id){
    STORAGE
 ════════════════════════ */
 function saveAll(showToast){
+  if(!IS_ADMIN) return; /* الزبائن لا يحفظون شيئاً */
   try{
     var s={DATA:DATA, CL:CL, settings:{
       siteName:G('sg-name').value, footerDesc:G('sg-desc').value, offerText:G('sg-offer').value,
@@ -2933,82 +3083,70 @@ function saveAll(showToast){
       socTw:(G('sc-tw')&&G('sc-tw').value)||'', socIg:(G('sc-ig')&&G('sc-ig').value)||'',
       socSn:(G('sc-sn')&&G('sc-sn').value)||'', socTg:(G('sc-tg')&&G('sc-tg').value)||'',
       yearlyDiscount: yearlyDiscount, ydBarEnabled: ydBarEnabled
-    }};
+    }, customers: (function(){ try{ var r=localStorage.getItem(STORE_KEY); var p=r?JSON.parse(r):{}; return p.customers||[]; }catch(e){ return []; } })() };
     localStorage.setItem(STORE_KEY, JSON.stringify(s));
-    var li=G('last-save-info'); if(li) li.textContent='آخر حفظ: '+new Date().toLocaleTimeString('ar');
-    if(showToast) toast('✅ تم الحفظ');
+    var li=G('last-save-info'); if(li) li.textContent='آخر حفظ محلي: '+new Date().toLocaleTimeString('ar');
+    /* رفع السحابة */
+    pushToCloud(s).then(function(){
+      var li2=G('last-save-info'); if(li2) li2.textContent='☁️ محفوظ على السحابة: '+new Date().toLocaleTimeString('ar');
+      if(showToast) toast('✅ تم الحفظ ومزامنة السحابة');
+    }).catch(function(){ if(showToast) toast('✅ محفوظ محلياً (السحابة غير متاحة)'); });
+    if(showToast&&!IS_ADMIN) toast('✅ تم الحفظ');
   } catch(e){ console.warn('Save error',e); }
 }
 function loadAll(){
-  try{
-    var raw=localStorage.getItem(STORE_KEY); if(!raw) return false;
-    var st=JSON.parse(raw);
-    if(st.DATA&&st.DATA.length) DATA=st.DATA;
-    if(st.CL) for(var k in st.CL) CL[k]=st.CL[k];
-    var s=st.settings||{};
-    function sv(id,val){ var el=G(id); if(el&&val!==undefined&&val!=='') el.value=val; }
-    sv('sg-name',s.siteName); sv('sg-desc',s.footerDesc); sv('sg-offer',s.offerText);
-    sv('sh-badge',s.badge); sv('sh-tagline',s.tagline); sv('sh-btn1',s.btn1); sv('sh-btn2',s.btn2); sv('sh-c1',s.c1); sv('sh-c3',s.c3);
-    sv('sc-wa',s.waPhone); sv('sc-ctatitle',s.ctaTitle); sv('sc-ctasub',s.ctaSub);
-    sv('sg-h1size',s.h1); sv('sg-body',s.body); sv('sg-cattitle',s.cat); sv('sg-sech2',s.sec);
-    sv('sc-pur',s.pur); sv('sc-pink',s.pink); sv('sc-cyan',s.cyan);
-    sv('ct-ns',s.ctNS); sv('ct-nc',s.ctNC); sv('ct-cs',s.ctCS); sv('ct-cc',s.ctCC);
-    sv('ct-ds',s.ctDS); sv('ct-dc',s.ctDC); sv('ct-fs',s.ctFS); sv('ct-fc',s.ctFC);
-    sv('ct-ps',s.ctPS); sv('ct-pc',s.ctPC); sv('ct-us',s.ctUS); sv('ct-uc',s.ctUC);
-    sv('ct-os',s.ctOS); sv('ct-oc',s.ctOC); sv('ct-bs',s.ctBS); sv('ct-bc',s.ctBC);
-    sv('ct-bl',s.ctBL); sv('ct-fl',s.ctFL);
-    sv('cc-accent',s.ccA); sv('cc-footer',s.ccF); sv('cc-bar',s.ccB); sv('cc-pclr',s.ccP);
-    sv('cc-ps',s.ccPS); sv('cc-btn',s.ccBT); sv('cc-bs',s.ccBS); sv('cc-plt',s.ccPLT);
-    sv('cc-bdx',s.ccBdX); sv('cc-ns',s.ccNS); sv('cc-scale',s.ccSc);
-    if(s.socTw){ sv('sc-tw',s.socTw); if(G('soc-tw')) G('soc-tw').href=s.socTw; }
-    if(s.socIg){ sv('sc-ig',s.socIg); if(G('soc-ig')) G('soc-ig').href=s.socIg; }
-    if(s.socSn){ sv('sc-sn',s.socSn); if(G('soc-sn')) G('soc-sn').href=s.socSn; }
-    if(s.socTg){ sv('sc-tg',s.socTg); if(G('soc-tg')) G('soc-tg').href=s.socTg; }
-    if(G('cc-ns')&&s.ccNS) G('cc-ns-v').textContent=s.ccNS+'px';
-    if(G('cc-ps')&&s.ccPS) G('cc-ps-v').textContent=s.ccPS+'px';
-    if(G('cc-bs')&&s.ccBS) G('cc-bs-v').textContent=s.ccBS+'px';
-    if(G('cc-scale')&&s.ccSc) G('cc-scale-v').textContent=s.ccSc+'%';
-    if(s.ccBdT){ cosmicBadgeType=s.ccBdT; sv('cc-bdt',s.ccBdT); }
-    if(typeof s.ccBdV!=='undefined'){ cosmicBadgeVisible=s.ccBdV; G('cc-bdv-track').classList.toggle('on',s.ccBdV); G('cc-bdv-lbl').textContent=s.ccBdV?'مفعّل':'معطّل'; }
-    if(s.ccCur){ cosmicCur=s.ccCur; sv('cc-cur',s.ccCur); }
-    if(s.pur) document.documentElement.style.setProperty('--pur',s.pur);
-    if(s.pink) document.documentElement.style.setProperty('--pink',s.pink);
-    if(s.cyan) document.documentElement.style.setProperty('--cyan',s.cyan);
-    if(s.bg){ document.documentElement.style.setProperty('--bg',s.bg); document.body.style.background=s.bg; }
-    if(s.bgImg&&s.bgImg!=='none'&&s.bgImg!==''){ var ov=G('bg-overlay'); ov.style.backgroundImage=s.bgImg; ov.style.display='block'; ov.style.opacity=s.bgOp||'0.4'; }
-    if(s.bgOpR){ sv('bg-op',s.bgOpR); G('v-bgop').textContent=s.bgOpR+'%'; }
-    if(s.cardStyle){ cardStyle='cosmic'; }
-    if(s.waPhone){ WA_LINK='https://wa.me/'+s.waPhone.replace(/\D/g,''); G('wa-float').href=WA_LINK; }
-    if(typeof s.yearlyDiscount !== 'undefined'){
-      yearlyDiscount = parseInt(s.yearlyDiscount)||20;
-      if(G('sg-yd')){ G('sg-yd').value=yearlyDiscount; }
-      if(G('sg-yd-num')){ G('sg-yd-num').value=yearlyDiscount; }
-      if(G('v-yd')){ G('v-yd').textContent=yearlyDiscount+'%'; }
-      updateSavePct();
-    }
-    if(typeof s.ydBarEnabled !== 'undefined'){
-      ydBarEnabled = s.ydBarEnabled;
-      if(G('yd-bar-track')) G('yd-bar-track').classList.toggle('on', ydBarEnabled);
-      if(G('yd-bar-lbl')) G('yd-bar-lbl').textContent = ydBarEnabled ? 'مفعّل' : 'معطّل';
-    }
-    if(s.siteName){ var n=s.siteName; G('nav-logo-text').textContent=' '+n; G('hero-logo-big').textContent='☽ '+n; G('ft-brand-name').textContent='☽ '+n; G('ft-copy-name').textContent=n; }
-    if(s.footerDesc) G('ft-desc').textContent=s.footerDesc;
-    if(s.offerText) G('offer-txt').innerHTML=s.offerText;
-    if(s.badge) G('hero-badge-txt').textContent=s.badge;
-    if(s.tagline) G('hero-tagline').textContent=s.tagline;
-    if(s.btn1) G('btn-browse').textContent=s.btn1;
-    if(s.btn2) G('btn-how').textContent=s.btn2;
-    if(s.ctaTitle) G('cta-title').textContent=s.ctaTitle;
-    if(s.ctaSub) G('cta-sub').textContent=s.ctaSub;
-    if(s.h1) liveH1(s.h1);
-    if(s.body) liveBody(s.body);
-    if(s.cat) liveCat(s.cat);
-    if(s.sec) liveSec(s.sec);
-    setTimeout(applyCardText, 100);
+  /* أدمن: حمّل من localStorage فوراً، ثم اجلب من السحابة */
+  if(IS_ADMIN){
+    try{
+      var raw=localStorage.getItem(STORE_KEY);
+      if(raw){ applyStateObj(JSON.parse(raw)); }
+    }catch(e){}
+    pullFromCloud().then(function(cloudData){
+      if(!cloudData) return;
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify(cloudData)); applyStateObj(cloudData); }catch(e){}
+    });
     return true;
-  } catch(e){ console.warn('Load error',e); return false; }
+  } else {
+    /* وضع الزبون: اجلب من السحابة فقط */
+    pullFromCloud().then(function(cloudData){
+      if(!cloudData){ /* fallback: localStorage إن وُجد */ try{ var r=localStorage.getItem(STORE_KEY); if(r) applyStateObj(JSON.parse(r)); }catch(e){} return; }
+      applyStateObj(cloudData);
+      buildCatChips(); renderCards(); applyCardText(); buildAtom(); updateCartUI();
+      setTimeout(updateSavePct,300);
+    });
+    return false;
+  }
 }
 function updateLSI(){ try{ var raw=localStorage.getItem(STORE_KEY); G('last-save-info').textContent=raw?'بيانات محفوظة ✅':'لا توجد بيانات محفوظة'; }catch(e){ G('last-save-info').textContent='التخزين غير متاح'; } }
+
+function getShareLink(){
+  var base = window.location.href.split('#')[0].split('?')[0];
+  /* إذا كان ملف HTML محلي نضيف تعليمة للزبون */
+  return base;
+}
+function initShareLink(){
+  if(!IS_ADMIN) return;
+  var inp=G('share-link-inp'); if(!inp) return;
+  inp.value = getShareLink();
+}
+function copyShareLink(){
+  var inp=G('share-link-inp'); if(!inp) return;
+  inp.select();
+  try{
+    if(navigator.clipboard){ navigator.clipboard.writeText(inp.value).then(function(){ toast('📋 تم نسخ رابط المتجر'); }); }
+    else { document.execCommand('copy'); toast('📋 تم نسخ الرابط'); }
+  }catch(e){ toast('🔗 '+inp.value); }
+}
+function openShareWhatsapp(){
+  var link=getShareLink();
+  var msg=encodeURIComponent('🌙 مرحباً! هذا رابط متجر قمر للاشتراكات الرقمية:\n'+link);
+  window.open('https://wa.me/?text='+msg,'_blank');
+}
+function logoutAdmin(){
+  if(!confirm('تسجيل الخروج من وضع الأدمن؟ ستحتاج رابط #admin للعودة.')) return;
+  try{ localStorage.removeItem('qamar_admin_mode'); }catch(e){}
+  toast('🔓 تم تسجيل الخروج'); setTimeout(function(){ location.reload(); },1200);
+}
 function exportBackup(){ saveAll(); try{ var raw=localStorage.getItem(STORE_KEY)||'{}'; var blob=new Blob([raw],{type:'application/json'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='qamar_backup_'+Date.now()+'.json'; a.click(); URL.revokeObjectURL(url); toast('📥 تم التصدير'); }catch(e){ toast('❌ فشل التصدير'); } }
 function importBackup(inp){ var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ try{ var st=JSON.parse(e.target.result); localStorage.setItem(STORE_KEY,JSON.stringify(st)); toast('✅ جاري إعادة التحميل...'); setTimeout(function(){ location.reload(); },1200); }catch(err){ toast('❌ ملف غير صالح'); } }; r.readAsText(f); }
 function resetAllData(){ if(!confirm('حذف كل البيانات والعودة للافتراضي؟')) return; try{ localStorage.removeItem(STORE_KEY); }catch(e){} toast('🗑️ جاري إعادة التحميل...'); setTimeout(function(){ location.reload(); },1000); }
@@ -3027,12 +3165,85 @@ function closeWelcome(save){
   try{
     if(save){
       var nm=(G('wp-name').value||'').trim(), ph=(G('wp-phone').value||'').trim();
-      if(ph){ var existWa=(G('sc-wa').value||'218910000000'); if(!G('sc-wa').value||G('sc-wa').value==='218910000000') G('sc-wa').value=ph.replace(/\D/g,''); }
-      if(nm||ph) toast('🎉 مرحباً '+(nm||'بك')+'! سيتم التواصل معك قريباً');
+      if(ph){ if(!G('sc-wa').value||G('sc-wa').value==='218910000000') G('sc-wa').value=ph.replace(/\D/g,''); }
+      if(nm||ph){
+        saveCustomer(nm, ph);
+        toast('🎉 مرحباً '+(nm||'بك')+'! سيتم التواصل معك قريباً');
+      }
       localStorage.setItem('qamar_welcomed','1');
     } else {
       localStorage.setItem('qamar_welcomed','skip');
     }
+  }catch(e){}
+}
+function saveCustomer(nm, ph){
+  try{
+    var raw=localStorage.getItem(STORE_KEY); var st=raw?JSON.parse(raw):{};
+    var custs=st.customers||[];
+    var phClean=ph.replace(/\D/g,'');
+    // remove duplicates by phone (keep newest)
+    if(phClean) custs=custs.filter(function(c){ return c.phone!==phClean; });
+    custs.push({name:nm||'', phone:phClean||ph, ts:Date.now()});
+    st.customers=custs;
+    localStorage.setItem(STORE_KEY,JSON.stringify(st));
+    renderCustomerList();
+  }catch(e){}
+}
+function renderCustomerList(){
+  try{
+    var raw=localStorage.getItem(STORE_KEY); if(!raw) return;
+    var st=JSON.parse(raw); var custs=(st.customers||[]).slice().reverse();
+    var q=(G('cust-search')&&G('cust-search').value||'').trim().toLowerCase();
+    if(q) custs=custs.filter(function(c){ return (c.name&&c.name.toLowerCase().includes(q))||(c.phone&&c.phone.includes(q)); });
+    var el=G('cust-list'); if(!el) return;
+    var cnt=G('cust-count'); if(cnt){ var raw2=localStorage.getItem(STORE_KEY); var st2=raw2?JSON.parse(raw2):{}; cnt.textContent=(st2.customers||[]).length+' زبون'; }
+    if(!custs.length){ el.innerHTML='<div style="text-align:center;color:var(--muted);padding:30px;font-size:.85rem">لا يوجد زبائن مسجّلين بعد</div>'; return; }
+    el.innerHTML=custs.map(function(c,i){
+      var dt=c.ts?new Date(c.ts).toLocaleString('ar'):'-';
+      return '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
+        +'<div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">'
+        +'<span style="font-weight:700;font-size:.88rem;color:var(--txt)">'+(c.name||'بدون اسم')+'</span>'
+        +'<span style="font-size:.78rem;color:var(--cyan);direction:ltr;text-align:right">'+(c.phone||'—')+'</span>'
+        +'<span style="font-size:.7rem;color:var(--muted)">'+dt+'</span>'
+        +'</div>'
+        +'<div style="display:flex;gap:6px;flex-shrink:0">'
+        +(c.phone?'<a href="https://wa.me/'+c.phone.replace(/\D/g,'')+'" target="_blank" style="width:30px;height:30px;border-radius:50%;background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.3);display:flex;align-items:center;justify-content:center;color:var(--green);text-decoration:none;font-size:.85rem">💬</a>':'')
+        +'<button onclick="deleteCustomer(\''+c.phone+'\',\''+c.ts+'\')" style="width:30px;height:30px;border-radius:50%;background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.25);color:var(--red);font-size:.8rem;cursor:pointer">✕</button>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }catch(e){}
+}
+function deleteCustomer(ph, ts){
+  try{
+    var raw=localStorage.getItem(STORE_KEY); if(!raw) return;
+    var st=JSON.parse(raw);
+    st.customers=(st.customers||[]).filter(function(c){ return !(c.phone===ph&&String(c.ts)===String(ts)); });
+    localStorage.setItem(STORE_KEY,JSON.stringify(st));
+    renderCustomerList();
+    toast('🗑️ تم حذف الزبون');
+  }catch(e){}
+}
+function clearAllCustomers(){
+  if(!confirm('حذف جميع بيانات الزبائن؟')) return;
+  try{
+    var raw=localStorage.getItem(STORE_KEY); if(!raw) return;
+    var st=JSON.parse(raw); st.customers=[];
+    localStorage.setItem(STORE_KEY,JSON.stringify(st));
+    renderCustomerList(); toast('🗑️ تم حذف جميع الزبائن');
+  }catch(e){}
+}
+function exportCustomers(){
+  try{
+    var raw=localStorage.getItem(STORE_KEY); if(!raw) return;
+    var st=JSON.parse(raw); var custs=st.customers||[];
+    if(!custs.length){ toast('لا يوجد بيانات للتصدير'); return; }
+    var rows=['الاسم,رقم الواتساب,التاريخ'];
+    custs.forEach(function(c){ rows.push('"'+(c.name||'')+'","'+(c.phone||'')+'","'+(c.ts?new Date(c.ts).toLocaleString('ar'):'')+'"'); });
+    var blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+    var url=URL.createObjectURL(blob); var a=document.createElement('a');
+    a.href=url; a.download='qamar_customers_'+Date.now()+'.csv'; a.click(); URL.revokeObjectURL(url);
+    toast('📥 تم تصدير '+custs.length+' زبون');
   }catch(e){}
 }
 
@@ -3201,6 +3412,22 @@ requestAnimationFrame(animateAtom);
 initWelcome();
 setTimeout(updateYdPreview, 500);
 setTimeout(updateSavePct, 100);
+
+/* إخفاء زر الإعدادات للزبائن */
+(function(){
+  if(!IS_ADMIN){
+    var btn=G('settings-btn'); if(btn) btn.style.display='none';
+    /* تأكد من حذف أي admin_mode قديم محفوظ */
+    try{ localStorage.removeItem('qamar_admin_mode'); }catch(e){}
+  } else {
+    /* إظهار مؤشر وضع الأدمن */
+    var ind=document.createElement('div');
+    ind.innerHTML='🔐 وضع الأدمن';
+    ind.style.cssText='position:fixed;bottom:calc(var(--sb,0px) + 70px);left:50%;transform:translateX(-50%);background:rgba(108,43,217,.85);color:#fff;font-size:.7rem;padding:4px 12px;border-radius:20px;z-index:9000;pointer-events:none;backdrop-filter:blur(8px);font-family:Tajawal,sans-serif;white-space:nowrap;border:1px solid rgba(255,255,255,.15)';
+    document.body.appendChild(ind);
+    setTimeout(function(){ ind.style.opacity='0'; ind.style.transition='opacity 1s'; setTimeout(function(){ if(ind.parentNode) ind.parentNode.removeChild(ind); },1000); },4000);
+  }
+})();
 /* ── Dynamic year ── */
 var ftY=G('ft-year'); if(ftY) ftY.textContent=new Date().getFullYear();
 /* ── Debounce saveAll ── */
