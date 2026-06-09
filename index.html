@@ -412,6 +412,37 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
 @media(min-width:600px){.mod-box{border-radius:24px;transform:scale(.9)}}
 .mod-ov.open .mod-box{transform:translateY(0)}
 @media(min-width:600px){.mod-ov.open .mod-box{transform:scale(1)}}
+
+/* ── mobile compact modal ── */
+@media(max-height:780px) and (max-width:599px){
+  .mod-hero{height:160px}
+  .mod-hero-logo{width:88px;height:88px;font-size:2.2rem}
+  .mod-body{padding:6px 12px calc(14px + var(--sb))}
+  .mod-nm{font-size:1.4rem;margin:4px 0 1px}
+  .mod-cat{font-size:.65rem;margin-bottom:2px}
+  .mod-st{font-size:.72rem;margin-bottom:5px}
+  #mod-avail-placeholder{margin-bottom:6px}
+  .mod-plans-grid{gap:5px;margin-bottom:8px}
+  .mod-plan-chip{padding:7px 5px;border-radius:11px;min-width:60px}
+  .mod-plan-chip .mpc-lbl{font-size:.72rem}
+  .mod-plan-chip .mpc-orig{font-size:.6rem;min-height:.7em}
+  .mod-plan-chip .mpc-price{font-size:.78rem}
+  .mod-pb{padding:8px 12px;margin-bottom:8px;border-radius:11px}
+  .mp-orig{font-size:.78rem}
+  .mp-big{font-size:1.7rem}
+  .mp-per{font-size:.62rem}
+  .mp-sv{padding:3px 10px;font-size:.68rem;margin-top:4px}
+  .mod-sec-hd{font-size:.58rem;margin-bottom:5px;padding-bottom:3px}
+  .mod-desc-box{padding:8px 10px;margin-bottom:8px}
+  .mod-desc-box p{font-size:.76rem}
+  .mod-feats{padding:4px 10px;margin-bottom:10px}
+  .mod-feats li{font-size:.75rem;padding:5px 0}
+  .mod-cta{padding:10px 8px;font-size:.78rem;border-radius:11px}
+  .mod-cart{padding:10px 8px;font-size:.68rem;border-radius:11px}
+  .mod-icon-btn{width:38px;height:38px;border-radius:10px;font-size:.88rem}
+  .mod-note{font-size:.58rem;margin-top:7px}
+  .mod-btns{gap:5px}
+}
 .mod-hero{position:relative;width:100%;height:220px;overflow:visible;border-radius:24px 24px 0 0;background:#06040f;flex-shrink:0}
 .mod-hero canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:24px 24px 0 0}
 .mod-hero-overlay{position:absolute;inset:0;border-radius:24px 24px 0 0;background:linear-gradient(to bottom,rgba(6,4,15,.0) 0%,rgba(6,4,15,.5) 60%,rgba(6,4,15,1) 100%)}
@@ -1431,7 +1462,6 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
       <div class="mod-btns">
         <button class="mod-cta mod-buy-btn" onclick="orderNow()">اطلب عبر واتساب 💬</button>
         <button class="mod-cart" onclick="addToCartMod()">🛒 أضف للسلة</button>
-        <button class="mod-icon-btn" onclick="shareProduct()" title="نسخ الرابط">🔗</button>
         <button class="mod-icon-btn" onclick="saveModCard()" title="حفظ البطاقة">💾</button>
       </div>
       <div class="mod-note">⚡ تسليم فوري · ضمان كامل · دعم 24/7</div>
@@ -2536,7 +2566,8 @@ function startModCanvas(canvas, accentHex, logoBg){
   if(modCanvasRAF){ cancelAnimationFrame(modCanvasRAF); modCanvasRAF=null; }
   try{
     var ac=h2r(accentHex||'#7c5fe6');
-    var W=canvas.offsetWidth||480, H=220;
+    var heroEl=G('mod-hero');
+    var W=canvas.offsetWidth||480, H=heroEl?heroEl.offsetHeight:220;
     canvas.width=W; canvas.height=H;
     var cx=W/2, cy=H*0.68, tC=0;
     var STARS=[]; for(var i=0;i<28;i++) STARS.push([Math.random()*W,Math.random()*H,i%3===0?1.4:0.7]);
@@ -2736,12 +2767,22 @@ function finishCard(ctx,cv,logoImg,lcx,lcy,lr,s,acc,ac,W,H,l){
     /* ── download ── */
     var dataURL=cv.toDataURL('image/png');
     var safeName=(s.name||'card').replace(/\s+/g,'-');
-    /* iOS: open in new tab (can long-press save); Desktop: download link */
     var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
-    if(isIOS){
-      var w=window.open('','_blank');
-      if(w){ w.document.write('<img src="'+dataURL+'" style="max-width:100%;display:block">'); w.document.close(); }
-      toast('💾 اضغط مطولاً على الصورة للحفظ');
+    if(isIOS && navigator.share){
+      /* convert dataURL to Blob then File for Web Share API */
+      cv.toBlob(function(blob){
+        var file=new File([blob],'qamar-'+safeName+'.png',{type:'image/png'});
+        if(navigator.canShare&&navigator.canShare({files:[file]})){
+          navigator.share({files:[file],title:s.name,text:'🌙 '+s.name+' — متجر قمر'})
+            .then(function(){ toast('💾 تم الحفظ في الاستوديو'); })
+            .catch(function(e){ if(e.name!=='AbortError') toast('⚠️ تعذر الحفظ'); });
+        } else {
+          /* fallback: open image in new tab */
+          var w=window.open('','_blank');
+          if(w){ w.document.write('<img src="'+dataURL+'" style="max-width:100%;display:block">'); w.document.close(); }
+          toast('💾 اضغط مطولاً على الصورة للحفظ');
+        }
+      },'image/png');
     } else {
       var a=document.createElement('a');
       a.download='qamar-'+safeName+'.png'; a.href=dataURL; a.click();
