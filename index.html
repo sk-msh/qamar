@@ -418,65 +418,141 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
 
 /* ── mobile compact modal ── */
 @media(max-width:599px){
+  /* ── overlay & box ── */
   .mod-ov{align-items:stretch}
   .mod-box{
-    border-radius:0;
-    height:100svh;max-height:100svh;
-    display:flex;flex-direction:column;
-    overflow:hidden;
+    border-radius:0;height:100svh;max-height:100svh;
+    display:flex;flex-direction:column;overflow:hidden;
   }
-  /* hero: 22% of screen height */
-  .mod-hero{height:22svh;flex-shrink:0;min-height:0}
-  /* logo: 11% of screen height */
+
+  /* ── hero: 18svh ── */
+  .mod-hero{height:18svh;min-height:0;flex-shrink:0}
+  .mod-hero-logo-wrap{top:60%;left:50%;transform:translate(-50%,-50%)}
   .mod-hero-logo{
-    width:11svh;height:11svh;font-size:clamp(1.2rem,4svh,2rem);
-    box-shadow:0 0 0 4px rgba(108,43,217,.2),0 0 20px 6px rgba(108,43,217,.55),0 0 40px 10px rgba(108,43,217,.22)
+    width:10svh;height:10svh;
+    font-size:clamp(1rem,3.5svh,1.8rem);
+    border-width:2px;
+    box-shadow:0 0 0 3px rgba(108,43,217,.18),0 0 18px 5px rgba(108,43,217,.6)
   }
-  /* body fills remaining space, no scroll */
+
+  /* ── body: fills rest, no overflow ── */
   .mod-body{
-    flex:1;min-height:0;
-    overflow:hidden;
-    padding:clamp(3px,1svh,8px) clamp(8px,3vw,14px) clamp(4px,1.2svh,10px);
+    flex:1;min-height:0;overflow:hidden;
+    padding:1.2svh 3.5vw calc(.8svh + var(--sb,.0px));
     display:flex;flex-direction:column;
-    gap:0;
   }
-  .mod-nm{font-size:clamp(.95rem,3.2svh,1.4rem);margin:clamp(2px,.6svh,5px) 0 clamp(1px,.3svh,3px);line-height:1.15}
-  .mod-cat{font-size:clamp(.58rem,1.8svh,.72rem);margin-bottom:clamp(1px,.4svh,4px)}
-  .mod-st{font-size:clamp(.6rem,1.9svh,.75rem);margin-bottom:clamp(2px,.7svh,6px)}
-  #mod-avail-placeholder{margin-bottom:clamp(2px,.6svh,5px)}
-  /* plans: no wrap, each chip fills equally */
-  .mod-plans-grid{gap:clamp(3px,1vw,6px);margin-bottom:clamp(3px,1svh,8px);flex-wrap:nowrap}
+
+  /* name */
+  .mod-nm{
+    font-size:clamp(.9rem,3svh,1.3rem);
+    margin:0 0 .3svh;line-height:1.1;
+    flex-shrink:0;
+  }
+  /* category */
+  .mod-cat{font-size:clamp(.55rem,1.7svh,.68rem);margin-bottom:.3svh;flex-shrink:0}
+  /* rating */
+  .mod-st{font-size:clamp(.55rem,1.7svh,.68rem);margin-bottom:.5svh;flex-shrink:0}
+  /* avail badge */
+  #mod-avail-placeholder{margin-bottom:.4svh;flex-shrink:0}
+
+  /* ── plans chips: fixed height row ── */
+  .mod-plans-grid{
+    display:flex;flex-wrap:nowrap;gap:1.5vw;
+    margin-bottom:.8svh;flex-shrink:0;
+  }
   .mod-plan-chip{
-    padding:clamp(4px,1.2svh,8px) clamp(2px,.8vw,5px);
-    border-radius:8px;min-width:0;flex:1;line-height:1.25
+    flex:1;min-width:0;
+    padding:1svh 1.2vw;
+    border-radius:8px;line-height:1.2;
   }
-  .mod-plan-chip .mpc-lbl{font-size:clamp(.6rem,1.9svh,.75rem)}
-  .mod-plan-chip .mpc-orig{font-size:clamp(.52rem,1.6svh,.65rem);min-height:0}
-  .mod-plan-chip .mpc-price{font-size:clamp(.66rem,2.1svh,.82rem)}
+  .mod-plan-chip .mpc-lbl{font-size:clamp(.58rem,1.8svh,.72rem);display:block}
+  .mod-plan-chip .mpc-orig{font-size:clamp(.5rem,1.5svh,.62rem);min-height:0;display:block}
+  .mod-plan-chip .mpc-price{font-size:clamp(.64rem,2svh,.8rem);display:block}
   .mod-plan-chip .mpc-av{display:none}
-  /* price box: horizontal layout */
+
+  /* ── price box: balanced, shows full price ── */
   .mod-pb{
-    padding:clamp(5px,1.4svh,10px) clamp(8px,2.5vw,12px);
-    margin-bottom:clamp(3px,1svh,8px);
+    flex-shrink:0;
+    padding:1.4svh 3.5vw;
+    margin-bottom:.8svh;
     border-radius:10px;
-    display:flex;align-items:center;justify-content:space-between;
-    gap:6px;flex-wrap:nowrap;text-align:right;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    text-align:center;
+    gap:.2svh;
   }
   .mod-pb::before{display:none}
-  .mp-orig{font-size:clamp(.62rem,2svh,.78rem);min-height:0;display:inline}
-  .mp-big{font-size:clamp(1.3rem,4.5svh,1.8rem);display:inline;line-height:1}
-  .mp-per{font-size:clamp(.54rem,1.7svh,.66rem);margin-top:0;display:inline;margin-right:2px}
-  .mp-sv{padding:clamp(1px,.5svh,3px) clamp(6px,2vw,10px);font-size:clamp(.56rem,1.7svh,.68rem);margin-top:0;flex-shrink:0}
-  .mod-sec-hd{font-size:clamp(.52rem,1.6svh,.62rem);margin-bottom:clamp(3px,.8svh,5px);padding-bottom:clamp(2px,.5svh,4px)}
-  .mod-desc-box{padding:clamp(4px,1.2svh,8px) clamp(7px,2vw,11px);margin-bottom:clamp(3px,.9svh,7px)}
-  .mod-desc-box p{font-size:clamp(.68rem,2.1svh,.78rem);line-height:1.45}
-  .mod-feats{padding:clamp(2px,.6svh,4px) clamp(7px,2vw,11px);margin-bottom:clamp(3px,1svh,8px)}
-  .mod-feats li{font-size:clamp(.64rem,2svh,.76rem);padding:clamp(2px,.7svh,5px) 0}
-  .mod-note{font-size:clamp(.5rem,1.5svh,.58rem);margin-top:clamp(3px,.8svh,6px)}
-  .mod-btns{gap:clamp(3px,1vw,6px);margin-top:auto;padding-top:clamp(3px,.8svh,6px);flex-wrap:nowrap}
-  .mod-cta{padding:clamp(8px,2.2svh,12px) clamp(6px,1.8vw,10px);font-size:clamp(.72rem,2.3svh,.86rem);border-radius:10px;white-space:nowrap}
-  .mod-cart{padding:clamp(8px,2.2svh,12px) clamp(5px,1.5vw,9px);font-size:clamp(.6rem,1.9svh,.72rem);border-radius:10px;white-space:nowrap}
-  .mod-icon-btn{width:clamp(32px,8svh,42px);height:clamp(32px,8svh,42px);border-radius:9px;font-size:clamp(.8rem,2.5svh,1rem);flex-shrink:0}
+  .mp-orig{
+    font-size:clamp(.62rem,1.9svh,.78rem);
+    min-height:0;display:block;
+    line-height:1.1;
+  }
+  .mp-big{
+    font-size:clamp(1.5rem,5svh,2.2rem);
+    display:block;line-height:1;
+  }
+  .mp-per{
+    font-size:clamp(.56rem,1.7svh,.68rem);
+    display:block;margin-top:.1svh;
+  }
+  .mp-sv{
+    padding:.2svh 2vw;
+    font-size:clamp(.54rem,1.6svh,.66rem);
+    margin-top:.3svh;
+  }
+
+  /* ── description ── */
+  .mod-sec-hd{
+    font-size:clamp(.52rem,1.6svh,.62rem);
+    margin-bottom:.3svh;padding-bottom:.2svh;
+    flex-shrink:0;
+  }
+  .mod-desc-box{
+    padding:.7svh 2.5vw;margin-bottom:.6svh;flex-shrink:0;
+  }
+  .mod-desc-box p{font-size:clamp(.62rem,1.9svh,.74rem);line-height:1.4}
+
+  /* ── features: scrollable if overflow ── */
+  .mod-feats{
+    padding:.3svh 2.5vw;
+    margin-bottom:.6svh;
+    flex-shrink:1;
+    overflow:hidden;
+  }
+  .mod-feats li{font-size:clamp(.6rem,1.9svh,.74rem);padding:.4svh 0}
+
+  /* note */
+  .mod-note{font-size:clamp(.48rem,1.4svh,.56rem);margin-top:.4svh;flex-shrink:0}
+
+  /* ── buttons: always at bottom, full width row ── */
+  .mod-btns{
+    flex-shrink:0;
+    margin-top:auto;
+    padding-top:.6svh;
+    gap:1.5vw;
+    flex-wrap:nowrap;
+  }
+  .mod-cta{
+    flex:2;
+    padding:1.6svh 1vw;
+    font-size:clamp(.72rem,2.2svh,.86rem);
+    border-radius:10px;white-space:nowrap;
+  }
+  .mod-cart{
+    flex:1;
+    padding:1.6svh 1vw;
+    font-size:clamp(.6rem,1.8svh,.72rem);
+    border-radius:10px;white-space:nowrap;
+  }
+  .mod-icon-btn{
+    flex-shrink:0;
+    width:clamp(34px,8svh,44px);
+    height:clamp(34px,8svh,44px);
+    border-radius:9px;
+    font-size:clamp(.82rem,2.4svh,1rem);
+  }
 }
 .mod-hero{position:relative;width:100%;height:220px;overflow:visible;border-radius:24px 24px 0 0;background:#06040f;flex-shrink:0}
 .mod-hero canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:24px 24px 0 0}
