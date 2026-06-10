@@ -1812,9 +1812,46 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
         </div>
       </div>
 
+      <!-- MOBILE MODAL PREVIEW -->
+      <div class="sp-block" style="border:1.5px solid rgba(108,43,217,.25);background:rgba(108,43,217,.03);margin-top:12px">
+        <div class="sp-block-title" style="color:var(--pur)">📱 معاينة المودال على الهاتف</div>
+        <div class="sp-intro" style="margin-bottom:12px">اسحب الخطوط الفاصلة بين الأقسام لتغيير حجم كل قسم. اضغط "تطبيق" لتفعيل التغييرات.</div>
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          <!-- iPhone -->
+          <div style="flex-shrink:0;margin:0 auto">
+            <div style="width:260px;background:#000;border-radius:38px;padding:8px;box-shadow:0 0 0 2px #3a2a80,0 0 30px rgba(80,40,200,.35)">
+              <div style="position:relative">
+                <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:60px;height:6px;background:#111;border-radius:0 0 6px 6px;z-index:5"></div>
+                <div id="mprev-box" style="background:#06040f;border-radius:28px;overflow:hidden;display:flex;flex-direction:column;height:520px;position:relative">
+                  <div id="mprev-hero" style="flex-shrink:0;background:linear-gradient(180deg,#1a0840,#0d0520);position:relative;overflow:hidden">
+                    <canvas id="mprev-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+                    <div id="mprev-logo" style="position:absolute;left:50%;transform:translateX(-50%);border-radius:50%;background:#1a0a40;border:2px solid rgba(255,255,255,.18);box-shadow:0 0 16px rgba(108,43,217,.6);display:flex;align-items:center;justify-content:center;font-size:1.4rem"></div>
+                    <div class="mprev-rz" data-sec="hero" title="اسحب للتغيير" style="position:absolute;bottom:0;left:0;right:0;height:14px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;z-index:10"><div style="width:32px;height:3px;background:rgba(150,100,255,.5);border-radius:2px"></div></div>
+                  </div>
+                  <div id="mprev-body" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+                    <div id="mprev-nm"    class="mprev-sec" data-sec="name"  style="text-align:center;font-weight:800;color:#fff;flex-shrink:0;position:relative"><span id="mprev-nm-txt">ChatGPT Plus</span><div class="mprev-rz" data-sec="name"  style="position:absolute;bottom:0;left:0;right:0;height:10px;cursor:ns-resize;display:flex;align-items:center;justify-content:center"><div style="width:24px;height:2px;background:rgba(150,100,255,.4);border-radius:1px"></div></div></div>
+                    <div id="mprev-info"  class="mprev-sec" data-sec="info"  style="display:flex;justify-content:space-between;align-items:center;flex-shrink:0;position:relative"><span id="mprev-avail-t" style="background:rgba(0,200,80,.2);color:#00e676;border-radius:6px;white-space:nowrap">✅ متاح</span><span id="mprev-cat-t" style="color:#5a4a98">🤖 ذكاء</span><span id="mprev-rat-t" style="color:#ffd740">4.9 ★★★</span><div class="mprev-rz" data-sec="info"  style="position:absolute;bottom:0;left:0;right:0;height:10px;cursor:ns-resize;display:flex;align-items:center;justify-content:center"><div style="width:24px;height:2px;background:rgba(150,100,255,.4);border-radius:1px"></div></div></div>
+                    <div id="mprev-plans" class="mprev-sec" data-sec="plans" style="display:flex;gap:3px;flex-shrink:0;position:relative"><div style="flex:1;background:#1a1060;border:1px solid #7c5fe6;border-radius:5px;text-align:center;color:#fff">شهري<br><b>250</b></div><div style="flex:1;background:#0d0828;border:1px solid #2a1a70;border-radius:5px;text-align:center;color:#9878cc">3أشهر<br><b style="color:#c8b4ff">720</b></div><div style="flex:1;background:#0d0828;border:1px solid #2a1a70;border-radius:5px;text-align:center;color:#9878cc">سنوي<br><b style="color:#c8b4ff">2600</b></div><div class="mprev-rz" data-sec="plans" style="position:absolute;bottom:0;left:0;right:0;height:10px;cursor:ns-resize;display:flex;align-items:center;justify-content:center"><div style="width:24px;height:2px;background:rgba(150,100,255,.4);border-radius:1px"></div></div></div>
+                    <div id="mprev-price" class="mprev-sec" data-sec="price" style="background:linear-gradient(135deg,rgba(20,10,60,.95),rgba(10,5,30,.95));border:1px solid #2a1a70;border-radius:8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative"><span style="color:rgba(255,80,80,.8);text-decoration:line-through">480</span><div style="text-align:center"><div style="font-weight:900;color:#fff;line-height:1" id="mprev-big-t">250</div><div style="color:#fff" id="mprev-per-t">د.ل/شهر</div></div><span style="background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.4);color:#00e676;border-radius:6px;white-space:nowrap">وفّر 48%</span><div class="mprev-rz" data-sec="price" style="position:absolute;bottom:0;left:0;right:0;height:10px;cursor:ns-resize;display:flex;align-items:center;justify-content:center"><div style="width:24px;height:2px;background:rgba(150,100,255,.4);border-radius:1px"></div></div></div>
+                    <div id="mprev-desc"  class="mprev-sec" data-sec="desc"  style="background:rgba(13,8,40,.5);border:1px solid #1e1660;border-radius:7px;flex-shrink:0;overflow:hidden;position:relative"><div style="color:#5a4a98;font-weight:700">📝 عن الخدمة</div><div style="color:#9878cc" id="mprev-desc-t">نموذج GPT-4o الأقوى</div><div class="mprev-rz" data-sec="desc" style="position:absolute;bottom:0;left:0;right:0;height:10px;cursor:ns-resize;display:flex;align-items:center;justify-content:center"><div style="width:24px;height:2px;background:rgba(150,100,255,.4);border-radius:1px"></div></div></div>
+                    <div id="mprev-feats" class="mprev-sec" data-sec="feats" style="background:rgba(13,8,40,.4);border:1px solid #1e1660;border-radius:7px;flex:1;min-height:0;overflow:hidden;position:relative"><div style="color:#5a4a98;font-weight:700">✦ ما ستحصل عليه</div><div style="color:#c8b4ff">✓ نموذج GPT-4o<br>✓ DALL-E 3<br>✓ بلا قيود</div><div class="mprev-rz" data-sec="feats" style="position:absolute;bottom:0;left:0;right:0;height:10px;cursor:ns-resize;display:flex;align-items:center;justify-content:center"><div style="width:24px;height:2px;background:rgba(150,100,255,.4);border-radius:1px"></div></div></div>
+                    <div id="mprev-btns"  class="mprev-sec" data-sec="btns"  style="display:flex;gap:3px;flex-shrink:0"><div style="flex:2;background:linear-gradient(135deg,#7c5fe6,#3a1a90);color:#fff;border-radius:8px;text-align:center;font-weight:800">اطلب 💬</div><div style="flex:1;background:#0d0828;border:1px solid #3a2a80;color:#c8b4ff;border-radius:8px;text-align:center">🛒 سلة</div><div style="width:26px;background:#0d0828;border:1px solid #3a2a80;color:#8878c8;border-radius:8px;text-align:center;flex-shrink:0">💾</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- sliders -->
+          <div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:.74rem;color:var(--muted);margin-bottom:2px">اسحب الفواصل أو استخدم الأشرطة:</div>
+            <div id="mprev-sliders" style="display:flex;flex-direction:column;gap:7px"></div>
+            <button class="sbn" onclick="applyModPreview()" style="margin-top:6px">✅ تطبيق على المودال</button>
+            <button class="sbn" onclick="resetModPreview()" style="background:rgba(255,82,82,.1);border-color:rgba(255,82,82,.3);color:var(--red)">↺ إعادة الضبط</button>
+          </div>
+        </div>
+      </div>
+
       <div id="cos-settings">
-        <div class="sp-block">
-          <div class="sp-block-title">🌌 ألوان الكارد الكوزمي</div>
           <div class="sp-grid">
             <div>
               <div class="sf"><label class="sl">اللون الرئيسي (المجرة)</label><input class="sc" type="color" id="cc-accent" value="#7c5fe6" oninput="liveCosmic()"></div>
@@ -3736,7 +3773,7 @@ function spTab(name, el){
   if(name==='backup') updateLSI();
   if(name==='customers') renderCustomerList();
   if(name==='categories') renderCatSettings();
-  if(name==='cards') applySaveModeUI();
+  if(name==='cards') { applySaveModeUI(); setTimeout(initMprev,50); }
 }
 
 /* ════════════════════════
@@ -4221,8 +4258,184 @@ function initCatDrag(container){
 }
 
 /* ════════════════════════
-   SAVE MODE (auto vs custom image)
+   MOBILE MODAL PREVIEW
 ════════════════════════ */
+var MOD_PREV = {
+  hero:  {h:90,  label:'Hero (ارتفاع الخلفية)',  min:50, max:160, svh:16},
+  name:  {h:28,  label:'اسم الخدمة',              min:16, max:50,  svhPad:0},
+  info:  {h:20,  label:'الفئة + التقييم + التوفر',min:14, max:36,  svhPad:.3},
+  plans: {h:52,  label:'الباقات',                 min:36, max:90,  svhPad:.9},
+  price: {h:46,  label:'السعر النهائي',            min:30, max:80,  svhPad:1},
+  desc:  {h:36,  label:'عن الخدمة',               min:20, max:70,  svhPad:.5},
+  feats: {h:60,  label:'ما ستحصل عليه',           min:30, max:120, svhPad:.5},
+  btns:  {h:30,  label:'الأزرار',                  min:22, max:50,  svhPad:1.5}
+};
+
+function buildMprevSliders(){
+  var cont=G('mprev-sliders'); if(!cont) return;
+  cont.innerHTML='';
+  Object.keys(MOD_PREV).forEach(function(key){
+    var cfg=MOD_PREV[key];
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:6px';
+    var lbl=document.createElement('span');
+    lbl.style.cssText='font-size:.68rem;color:var(--muted);width:100px;flex-shrink:0;line-height:1.2';
+    lbl.textContent=cfg.label;
+    var inp=document.createElement('input');
+    inp.type='range'; inp.min=cfg.min; inp.max=cfg.max; inp.value=cfg.h; inp.step=1;
+    inp.style.flex='1';
+    var val=document.createElement('span');
+    val.style.cssText='font-size:.68rem;color:var(--txt);min-width:28px';
+    val.id='mprev-val-'+key;
+    val.textContent=cfg.h+'px';
+    inp.oninput=function(){ cfg.h=parseInt(inp.value); val.textContent=cfg.h+'px'; renderMprev(); };
+    row.appendChild(lbl); row.appendChild(inp); row.appendChild(val);
+    cont.appendChild(row);
+  });
+}
+
+function renderMprev(){
+  var box=G('mprev-box'); if(!box) return;
+  var totalH=box.offsetHeight||520;
+  /* hero */
+  var hero=G('mprev-hero');
+  if(hero) hero.style.height=MOD_PREV.hero.h+'px';
+  /* canvas */
+  var cv=G('mprev-canvas');
+  if(cv&&hero){
+    cv.width=cv.offsetWidth||244; cv.height=MOD_PREV.hero.h;
+    var acc=cV('cc-accent','#7c5fe6'); var ac=h2r(acc);
+    var ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+    var cx=W/2, cy=H*.5;
+    ctx.clearRect(0,0,W,H);
+    var bg=ctx.createRadialGradient(cx,cy,4,cx,cy,W*.8);
+    bg.addColorStop(0,'rgba('+Math.round(ac.r*.22)+','+Math.round(ac.g*.12)+','+Math.round(ac.b*.32)+',1)');
+    bg.addColorStop(1,'#05030e');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+    [[55,16],[70,26],[82,34],[93,42]].forEach(function(o,i){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(.4+i*.3);
+      ctx.beginPath(); ctx.ellipse(0,0,o[0],o[1],0,0,Math.PI*2);
+      ctx.strokeStyle='rgba('+ac.r+','+ac.g+','+ac.b+','+((.5-i*.07).toFixed(2))+')';
+      ctx.lineWidth=1.2; ctx.stroke(); ctx.restore();
+    });
+    var gw=ctx.createRadialGradient(cx,cy,0,cx,cy,32);
+    gw.addColorStop(0,'rgba('+ac.r+','+ac.g+','+ac.b+',.6)'); gw.addColorStop(1,'transparent');
+    ctx.fillStyle=gw; ctx.beginPath(); ctx.arc(cx,cy,40,0,Math.PI*2); ctx.fill();
+  }
+  /* logo */
+  var logo=G('mprev-logo');
+  if(logo&&hero){
+    var lsz=Math.round(MOD_PREV.hero.h*.42);
+    logo.style.width=lsz+'px'; logo.style.height=lsz+'px';
+    logo.style.top=(MOD_PREV.hero.h*.5-lsz/2)+'px';
+    /* populate with current sub logo */
+    if(curSub){ var l=getLogo(curSub); logo.style.background=l.bg||'#1a0a40'; logo.innerHTML=l.src?'<img src="'+l.src+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':'<span style="font-size:'+(lsz*.45)+'px">'+(l.em||'📦')+'</span>'; }
+  }
+  /* body sections */
+  var bodyEl=G('mprev-body');
+  var secs=['name','info','plans','price','desc','feats','btns'];
+  var fs=Math.round(MOD_PREV.hero.h/90*9); /* scale font with hero */
+  secs.forEach(function(key){
+    var el=G('mprev-'+key); if(!el) return;
+    el.style.padding=Math.round(MOD_PREV[key].svhPad||0)+'px '+(key==='feats'||key==='desc'?'6px':'4px');
+    if(key==='feats') el.style.height=MOD_PREV[key].h+'px';
+    else el.style.minHeight=MOD_PREV[key].h+'px';
+    /* font sizes */
+    var fbase=Math.max(7,Math.round(fs*.85));
+    el.style.fontSize=fbase+'px';
+    if(key==='name') el.style.fontSize=Math.max(10,Math.round(fs*1.1))+'px';
+    if(key==='price'){ G('mprev-big-t')&&(G('mprev-big-t').style.fontSize=Math.max(16,Math.round(fs*2.2))+'px'); G('mprev-per-t')&&(G('mprev-per-t').style.fontSize=Math.max(7,Math.round(fs*.8))+'px'); }
+  });
+  /* body top */
+  if(bodyEl) bodyEl.style.paddingTop='0';
+  /* populate with real sub data */
+  if(curSub){
+    G('mprev-nm-txt')&&(G('mprev-nm-txt').textContent=curSub.name);
+    G('mprev-cat-t')&&(G('mprev-cat-t').textContent=catL(curSub.cat));
+    G('mprev-rat-t')&&(G('mprev-rat-t').textContent=s5(curSub.rating)+' '+curSub.rating);
+    G('mprev-desc-t')&&(G('mprev-desc-t').textContent=(curSub.desc||'').substring(0,40));
+  }
+}
+
+function applyModPreview(){
+  /* apply hero height and logo position to actual CSS vars */
+  var root=document.documentElement;
+  var heroSvh=(MOD_PREV.hero.h/8.28).toFixed(1); /* 520px total / 62.8 = approx svh */
+  root.style.setProperty('--mod-prev-hero', heroSvh+'svh');
+  /* update the actual mobile CSS values */
+  var styleId='mprev-applied';
+  var existing=document.getElementById(styleId);
+  if(existing) existing.remove();
+  var st=document.createElement('style');
+  st.id=styleId;
+  var heroSvhVal=(MOD_PREV.hero.h/5.2).toFixed(1);
+  var namePad=(MOD_PREV.name.svhPad||0);
+  var btnPad=(MOD_PREV.btns.svhPad||1.5);
+  st.textContent='@media(max-width:599px){'
+    +'.mod-hero{height:'+heroSvhVal+'svh !important}'
+    +'.mod-nm{margin-top:'+namePad+'svh !important}'
+    +'.mod-btns div,.mod-cta,.mod-cart{padding:'+btnPad+'svh 1vw !important}'
+    +'}';
+  document.head.appendChild(st);
+  toast('✅ تم تطبيق التصميم على المودال');
+}
+
+function resetModPreview(){
+  MOD_PREV={
+    hero:{h:90,label:'Hero (ارتفاع الخلفية)',min:50,max:160,svh:16},
+    name:{h:28,label:'اسم الخدمة',min:16,max:50,svhPad:0},
+    info:{h:20,label:'الفئة + التقييم + التوفر',min:14,max:36,svhPad:.3},
+    plans:{h:52,label:'الباقات',min:36,max:90,svhPad:.9},
+    price:{h:46,label:'السعر النهائي',min:30,max:80,svhPad:1},
+    desc:{h:36,label:'عن الخدمة',min:20,max:70,svhPad:.5},
+    feats:{h:60,label:'ما ستحصل عليه',min:30,max:120,svhPad:.5},
+    btns:{h:30,label:'الأزرار',min:22,max:50,svhPad:1.5}
+  };
+  buildMprevSliders(); renderMprev();
+  var st=document.getElementById('mprev-applied'); if(st) st.remove();
+  toast('↺ تم إعادة الضبط');
+}
+
+/* drag resize handles in preview */
+(function(){
+  var dragging=null, startY=0, startH=0;
+  document.addEventListener('mousedown',function(e){
+    var h=e.target.closest('.mprev-rz'); if(!h) return;
+    var sec=h.getAttribute('data-sec'); if(!sec||!MOD_PREV[sec]) return;
+    dragging=sec; startY=e.clientY; startH=MOD_PREV[sec].h;
+    e.preventDefault();
+  });
+  document.addEventListener('touchstart',function(e){
+    var h=e.target.closest('.mprev-rz'); if(!h) return;
+    var sec=h.getAttribute('data-sec'); if(!sec||!MOD_PREV[sec]) return;
+    dragging=sec; startY=e.touches[0].clientY; startH=MOD_PREV[sec].h;
+  },{passive:true});
+  function move(y){
+    if(!dragging) return;
+    var cfg=MOD_PREV[dragging];
+    var dy=startY-y;
+    var nv=Math.round(startH+dy);
+    nv=Math.max(cfg.min,Math.min(cfg.max,nv));
+    cfg.h=nv;
+    var vEl=G('mprev-val-'+dragging); if(vEl) vEl.textContent=nv+'px';
+    var sEl=document.querySelector('#mprev-sliders input[oninput*="'+dragging+'"]');
+    /* update slider if found */
+    var sliders=document.querySelectorAll('#mprev-sliders input[type=range]');
+    var keys=Object.keys(MOD_PREV);
+    var idx=keys.indexOf(dragging);
+    if(sliders[idx]) sliders[idx].value=nv;
+    renderMprev();
+  }
+  document.addEventListener('mousemove',function(e){ move(e.clientY); });
+  document.addEventListener('touchmove',function(e){ move(e.touches[0].clientY); },{passive:true});
+  document.addEventListener('mouseup',function(){ dragging=null; });
+  document.addEventListener('touchend',function(){ dragging=null; });
+})();
+
+function initMprev(){
+  buildMprevSliders();
+  renderMprev();
+}
 var SAVE_MODE = 'auto';      /* 'auto' | 'custom' */
 var CUSTOM_IMGS = {};         /* { serviceId: { data: base64, name: filename } } */
 var _customImgActiveId = null; /* الخدمة المحددة حالياً في الـ dropdown */
