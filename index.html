@@ -2795,25 +2795,36 @@ function saveCardImage(id){
     var feats2=s.feats||[];
     var maxP=Math.min(plans.length,3);
 
-    /* estimate total content height */
-    var descLines=desc2?wrapText(ctx,desc2,'38px Tajawal,Arial',W-180):[];
-    var estH=(
-      128 +     /* name */
-      60  +     /* cat */
-      50  +     /* rating */
-      60  +     /* plans header+gap */
-      168 +     /* plans box */
-      (desc2?(60+descLines.length*54+40+50):0) +
-      (feats2.length?(60+Math.min(feats2.length,5)*84+30):0)
-    );
-
-    /* available zone: from logo bottom to footer line */
+    /* two-pass: measure at sc=1, then compute real sc */
     var startY=lcy+lr3;
-    var availH=FOOTER_Y-startY-40;
+    var availH=FOOTER_Y-startY-30;
 
-    /* scale factor: compress if content overflows */
-    var sc=Math.min(1, availH/Math.max(estH,1));
-    sc=Math.max(sc,0.55); /* never below 55% */
+    function calcH(s_){
+      var g=38*s_, nFS=112*s_, cFS=38*s_, rFS=36*s_, sFS=42*s_;
+      var bH=168*s_, dLH=54*s_, dFS=38*s_, fH=68*s_, fSt=84*s_;
+      var dg=g*.8;
+      var dL2=desc2?wrapText(ctx,desc2,Math.round(dFS)+'px Tajawal,Arial',W-180):[];
+      var h=0;
+      h+=Math.round(g*.8);                          /* top gap */
+      h+=Math.round(nFS*1.05)+Math.round(g*.3);     /* name */
+      h+=Math.round(cFS*1.2);                        /* cat */
+      h+=Math.round(rFS*1.2)+dg;                    /* rating */
+      h+=dg+Math.round(sFS*1.3)+bH+dg;             /* plans */
+      if(desc2) h+=dg+Math.round(sFS*1.3)+(dL2.length*Math.round(dLH)+Math.round(32*s_))+dg;
+      var fc=Math.min((s.feats||[]).length,5);
+      if(fc) h+=dg+Math.round(sFS*1.3)+fc*Math.round(fSt);
+      return h;
+    }
+
+    /* binary search for sc that fits */
+    var sc=1;
+    for(var _i=0;_i<12;_i++){
+      if(calcH(sc)<=availH) break;
+      sc*=0.94;
+    }
+    sc=Math.max(sc,0.42);
+
+    var descLines=desc2?wrapText(ctx,desc2,Math.round(38*sc)+'px Tajawal,Arial',W-180):[];
 
     var GAP=Math.round(38*sc);
     var nameFS=Math.round(112*sc);
