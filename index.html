@@ -2691,10 +2691,16 @@ function openMod(id){
   G('mtype-month').style.display=hm?'':'none'; G('mtype-card').style.display=hc?'':'none';
   modType=hm?'monthly':'card'; modCardIdx=0;
 
-  var cosmicSelected=null;
+  var cosmicSelected=null, cosmicCardIdx=null;
   var cosmicBtns=document.querySelectorAll('.cosmic-plan-btn.active[data-sub-id="'+id+'"]');
-  if(cosmicBtns.length>0){ var dm=parseInt(cosmicBtns[0].getAttribute('data-months')); if(dm&&dm>0) cosmicSelected=dm; }
+  if(cosmicBtns.length>0){
+    var dm=parseInt(cosmicBtns[0].getAttribute('data-months'));
+    var dc=parseInt(cosmicBtns[0].getAttribute('data-card-idx'));
+    if(dm&&dm>0) cosmicSelected=dm;
+    if(!isNaN(dc)&&dc>=0) cosmicCardIdx=dc;
+  }
   if(cosmicSelected&&hm){ modMonths=cosmicSelected; }
+  else if(cosmicCardIdx!==null&&hc){ modCardIdx=cosmicCardIdx; modType='card'; }
   else if(hm&&isYearly){ var mp12=null,mpLast=null; for(var j=0;j<s.monthlyPrices.length;j++){ if(s.monthlyPrices[j].months===12) mp12=s.monthlyPrices[j]; mpLast=s.monthlyPrices[j]; } modMonths=mp12?12:mpLast.months; }
   else{ modMonths=hm?s.monthlyPrices[0].months:1; }
 
@@ -3501,8 +3507,9 @@ function buildCosmicCard(sub){
     var discBadge = showDisc ? '<span class="cosmic-plan-disc">-'+yearlyDiscount+'%</span>' : '';
 
     var dMonths = isCard ? 0 : (p.months||1);
+    var dCardIdx = isCard ? i : -1;
     return '<div class="cosmic-plan-btn'+(isActive?' active':'')+'"'
-      +' data-months="'+dMonths+'" data-sub-id="'+sub.id+'"'
+      +' data-months="'+dMonths+'" data-sub-id="'+sub.id+'" data-card-idx="'+dCardIdx+'"'
       +(isActive?' style="border-color:'+acc+';background:'+(lm?'#e0d8ff':'#1a1060')+';color:'+(lm?'#3a10b0':'#c8b4ff')+'"':' style="background:'+(lm?'#f0ecff':'#0d0828')+';border-color:'+(lm?'rgba(90,34,200,.25)':'#2a1a70')+';color:'+(lm?'#5a3a90':'#8878c8')+'"')+' onclick="event.stopPropagation();selectCosmicPlan(this)">'
       +'<span class="cosmic-plan-name">'+lb+'</span>'+discBadge+or
       +'<span class="cosmic-plan-price" style="color:'+pc+';font-size:'+ps+'px">'+pr+'</span></div>';
