@@ -431,60 +431,105 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
 .mod-ov.open .mod-box{transform:translateY(0)}
 @media(min-width:600px){.mod-ov.open .mod-box{transform:scale(1)}}
 
-/* ── mobile modal: story format 9:16 ── */
+/* ── MOBILE MODAL 9:16 ── */
 @media(max-width:599px){
-  .mod-ov{align-items:flex-end;justify-content:center}
+  .mod-ov{align-items:center;justify-content:center;padding:0}
+
+  /* صندوق بنسبة 9:16 ثابتة */
   .mod-box{
-    border-radius:0;
     width:100vw;
-    height:100svh;max-height:100svh; /* JS will override with exact px */
-    display:flex;flex-direction:column;
+    height:calc(100vw * 16 / 9);
+    max-height:100svh;
+    border-radius:0;
+    display:grid;
+    grid-template-rows: 22% 1fr;
     overflow:hidden;
+    transform:none !important;
   }
-  /* hero */
-  .mod-hero{height:var(--mod-hero-h,18svh);min-height:0;flex-shrink:0;transition:none}
-  .mod-hero-logo-wrap{top:60%;left:50%;transform:translate(-50%,-50%)}
+  .mod-ov.open .mod-box{transform:none !important}
+
+  /* hero: 22% من الارتفاع */
+  .mod-hero{
+    width:100%;height:100%;
+    min-height:0;position:relative;
+    overflow:hidden;border-radius:0;
+  }
+  .mod-hero canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:0}
+  .mod-hero-logo-wrap{top:62%;left:50%;transform:translate(-50%,-50%)}
   .mod-hero-logo{
-    width:var(--mod-logo-sz,10svh);height:var(--mod-logo-sz,10svh);
-    font-size:clamp(.8rem,3svh,1.8rem);border-width:2px;
-    box-shadow:0 0 0 3px rgba(108,43,217,.18),0 0 14px 4px rgba(108,43,217,.55)
+    width:min(12vw, calc(100vw*16/9*.12));
+    height:min(12vw, calc(100vw*16/9*.12));
+    font-size:5vw;border-width:2px;
+    box-shadow:0 0 0 2px rgba(108,43,217,.2),0 0 10px 3px rgba(108,43,217,.5)
   }
-  /* body */
+
+  /* body: الـ 78% الباقية - grid بنسب */
   .mod-body{
-    flex:1;min-height:0;overflow:hidden;
-    padding:var(--mod-pad-v,4px) var(--mod-pad-h,3vw) var(--mod-pad-v,4px);
-    display:flex;flex-direction:column;
-    gap:var(--mod-gap,2px);
+    min-height:0;overflow:hidden;
+    display:grid;
+    grid-template-rows:
+      auto   /* name */
+      auto   /* cat */
+      auto   /* rating */
+      auto   /* avail */
+      auto   /* plans */
+      auto   /* price box */
+      auto   /* desc */
+      1fr    /* features - يأخذ الباقي */
+      auto   /* note */
+      auto;  /* buttons */
+    padding:1.2vw 3vw 1.5vw;
+    gap:0.8vw;
+    align-content:start;
   }
-  .mod-nm{font-size:var(--mod-nm-fs,1rem);margin:0;line-height:1.1;flex-shrink:0}
-  .mod-cat{font-size:var(--mod-cat-fs,.6rem);margin-bottom:0;flex-shrink:0}
-  .mod-st{font-size:var(--mod-cat-fs,.6rem);margin-bottom:0;flex-shrink:0}
-  #mod-avail-placeholder{margin-bottom:0;flex-shrink:0}
-  .mod-plans-grid{display:flex;flex-wrap:nowrap;gap:1vw;margin-bottom:0;flex-shrink:0}
-  .mod-plan-chip{flex:1;min-width:0;padding:var(--mod-chip-pad,5px 3px);border-radius:7px;line-height:1.2}
-  .mod-plan-chip .mpc-lbl{font-size:var(--mod-chip-lbl,.64rem);display:block}
-  .mod-plan-chip .mpc-orig{font-size:var(--mod-chip-orig,.54rem);min-height:0;display:block}
-  .mod-plan-chip .mpc-price{font-size:var(--mod-chip-pr,.7rem);display:block}
-  .mod-plan-chip .mpc-av{display:none}
-  .mod-pb{flex-shrink:0;padding:var(--mod-pb-pad,5px 10px);margin-bottom:0;border-radius:9px}
+
+  /* كل العناصر بـ font-size نسبية من عرض الشاشة */
+  .mod-nm{font-size:4.2vw;line-height:1.1;text-align:center;margin:0}
+  .mod-cat{font-size:2.8vw;text-align:center;margin:0}
+  .mod-st{font-size:2.8vw;text-align:center;margin:0}
+  #mod-avail-placeholder{margin:0;text-align:center}
+  #mod-avail-placeholder .avail-badge{font-size:2.5vw;padding:1px 6px}
+
+  /* plans chips */
+  .mod-plans-grid{display:flex;flex-wrap:nowrap;gap:1.5vw;margin:0}
+  .mod-plan-chip{
+    flex:1;min-width:0;
+    padding:1.2vw 1vw;
+    border-radius:6px;border-width:1px;
+    line-height:1.15;
+  }
+  .mod-plan-chip .mpc-lbl  {font-size:2.6vw;display:block;font-weight:800}
+  .mod-plan-chip .mpc-orig {font-size:2.2vw;display:block;min-height:0}
+  .mod-plan-chip .mpc-price{font-size:2.8vw;display:block;font-weight:900}
+  .mod-plan-chip .mpc-av   {display:none}
+
+  /* price box */
+  .mod-pb{padding:1.5vw 3vw;border-radius:8px;margin:0}
   .mod-pb::before{display:none}
-  .mod-pb-inner{gap:4px;align-items:center}
-  .mp-orig{font-size:var(--mod-orig-fs,.72rem);min-height:0;display:block;line-height:1.1;flex-shrink:0}
-  .mp-center{gap:0}
-  .mp-big{font-size:var(--mod-big-fs,1.5rem);line-height:1}
-  .mp-per{font-size:var(--mod-per-fs,.58rem);margin-top:1px}
-  .mp-sv{padding:2px 6px;font-size:var(--mod-per-fs,.58rem);margin-top:0;border-radius:10px}
-  .mod-sec-hd{font-size:var(--mod-sec-fs,.56rem);margin-bottom:1px;padding-bottom:1px;flex-shrink:0}
-  .mod-desc-box{padding:var(--mod-desc-pad,3px 8px);margin-bottom:0;flex-shrink:0}
-  .mod-desc-box p{font-size:var(--mod-desc-fs,.64rem);line-height:1.35}
-  .mod-feats{padding:1px 8px;margin-bottom:0;flex-shrink:0;overflow:hidden}
-  .mod-feats li{font-size:var(--mod-feat-fs,.64rem);padding:var(--mod-feat-pad,2px 0)}
-  .mf-ico{font-size:.72rem}
-  .mod-note{font-size:var(--mod-per-fs,.52rem);margin-top:1px;flex-shrink:0}
-  .mod-btns{flex-shrink:0;margin-top:auto;padding-top:2px;gap:1.2vw;flex-wrap:nowrap}
-  .mod-cta{flex:2;padding:var(--mod-btn-pad,10px 4px);font-size:var(--mod-btn-fs,.74rem);border-radius:9px;white-space:nowrap}
-  .mod-cart{flex:1;padding:var(--mod-btn-pad,10px 4px);font-size:var(--mod-btn-fs2,.64rem);border-radius:9px;white-space:nowrap}
-  .mod-icon-btn{flex-shrink:0;width:var(--mod-logo-sz,34px);height:var(--mod-logo-sz,34px);border-radius:8px;font-size:.88rem;min-width:28px;min-height:28px}
+  .mod-pb-inner{gap:3vw;align-items:center}
+  .mp-orig{font-size:3vw;display:block;line-height:1;flex-shrink:0}
+  .mp-center{gap:0;align-items:center}
+  .mp-big{font-size:7.5vw;line-height:1}
+  .mp-per{font-size:2.6vw;margin-top:0}
+  .mp-sv{padding:1px 8px;font-size:2.4vw;margin-top:0;border-radius:8px}
+
+  /* sections */
+  .mod-sec-hd{font-size:2.4vw;margin-bottom:0;padding-bottom:1px}
+  .mod-desc-box{padding:1.2vw 2vw;margin:0}
+  .mod-desc-box p{font-size:2.6vw;line-height:1.4;color:#9878cc}
+  .mod-feats{padding:0 2vw;margin:0;overflow:hidden}
+  .mod-feats li{font-size:2.6vw;padding:0.8vw 0;border-bottom-width:1px}
+  .mf-ico{font-size:2.8vw}
+  .mod-note{font-size:2.2vw;text-align:center;margin:0}
+
+  /* buttons */
+  .mod-btns{gap:1.5vw;flex-wrap:nowrap;margin-top:0;padding-top:0}
+  .mod-cta{flex:2;padding:2vw 1vw;font-size:3vw;border-radius:8px;white-space:nowrap}
+  .mod-cart{flex:1;padding:2vw 1vw;font-size:2.6vw;border-radius:8px;white-space:nowrap}
+  .mod-icon-btn{width:8vw;height:8vw;min-width:28px;min-height:28px;border-radius:7px;font-size:3.5vw;flex-shrink:0}
+
+  /* close button */
+  .mod-cl{width:7vw;height:7vw;min-width:24px;min-height:24px;font-size:3.5vw;top:2vw;left:2vw}
 }
 .mod-hero{position:relative;width:100%;height:220px;overflow:visible;border-radius:24px 24px 0 0;background:#06040f;flex-shrink:0}
 .mod-hero canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:24px 24px 0 0}
@@ -4240,74 +4285,13 @@ function updateLSI(){ try{ var raw=localStorage.getItem(STORE_KEY); G('last-save
 
 function adaptModMobile(){
   if(window.innerWidth>=600) return;
-  if(!curSub) return;
-  var root=document.documentElement;
+  /* CSS handles 9:16 via vw units — just ensure box height is correct */
   var box=document.querySelector('.mod-box');
-  var body=document.querySelector('.mod-body');
-  if(!box||!body) return;
-
-  var VW=window.innerWidth;
-  var VH=window.innerHeight;
-
-  /* حساب الارتفاع المستهدف بنسبة 9:16 */
-  var targetH = Math.min(VH, Math.round(VW * 16 / 9));
-  /* إذا كانت الشاشة أقصر من النسبة خذ ارتفاع الشاشة كاملاً */
-  if(targetH > VH) targetH = VH;
-
-  /* اضبط ارتفاع الصندوق بالضبط */
-  box.style.height = targetH + 'px';
-  box.style.maxHeight = targetH + 'px';
-
-  function applyScale(sc){
-    sc=Math.max(0.34,Math.min(1,sc));
-    var heroH = Math.round(targetH * 0.18 * sc);
-    var logoSz = Math.round(targetH * 0.10 * sc);
-    root.style.setProperty('--mod-hero-h',   heroH+'px');
-    root.style.setProperty('--mod-logo-sz',  logoSz+'px');
-    root.style.setProperty('--mod-gap',      (targetH*0.0032*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-pad-v',    (targetH*0.005*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-nm-fs',    (targetH*0.028*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-cat-fs',   (targetH*0.016*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-chip-pad', (targetH*0.006*sc).toFixed(1)+'px '+(VW*0.008*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-chip-lbl', (targetH*0.017*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-chip-orig',(targetH*0.013*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-chip-pr',  (targetH*0.019*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-pb-pad',   (targetH*0.007*sc).toFixed(1)+'px '+(VW*0.025*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-big-fs',   (targetH*0.042*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-orig-fs',  (targetH*0.019*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-per-fs',   (targetH*0.014*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-sec-fs',   (targetH*0.014*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-desc-pad', (targetH*0.004*sc).toFixed(1)+'px '+(VW*0.02*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-desc-fs',  (targetH*0.018*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-feat-fs',  (targetH*0.017*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-feat-pad', (targetH*0.0025*sc).toFixed(1)+'px 0');
-    root.style.setProperty('--mod-btn-pad',  (targetH*0.012*sc).toFixed(1)+'px '+(VW*0.008*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-btn-fs',   (targetH*0.02*sc).toFixed(1)+'px');
-    root.style.setProperty('--mod-btn-fs2',  (targetH*0.017*sc).toFixed(1)+'px');
-  }
-
-  applyScale(1);
-
-  /* قياس فعلي وتقليص تكراري */
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      var sc=1, maxIter=16;
-      for(var iter=0;iter<maxIter;iter++){
-        var heroEl=document.querySelector('.mod-hero');
-        var heroH2=heroEl?heroEl.offsetHeight:Math.round(targetH*.18);
-        var bodyScroll=body.scrollHeight;
-        var btnsEl=document.querySelector('.mod-btns');
-        var btnsH=btnsEl?btnsEl.offsetHeight+8:44;
-        var padEl=document.querySelector('.mod-body');
-        var padV=padEl?parseFloat(getComputedStyle(padEl).paddingTop||0)+parseFloat(getComputedStyle(padEl).paddingBottom||0):0;
-        var total=heroH2+bodyScroll+padV;
-        if(total<=targetH*0.99) break;
-        sc*=0.93;
-        if(sc<0.34){ sc=0.34; applyScale(sc); break; }
-        applyScale(sc);
-      }
-    });
-  });
+  if(!box) return;
+  var vw=window.innerWidth;
+  var targetH=Math.min(window.innerHeight, Math.round(vw*16/9));
+  box.style.height=targetH+'px';
+  box.style.maxHeight=targetH+'px';
 }
 
 function getShareLink(){
