@@ -2741,7 +2741,7 @@ function saveCardImage(id){
   ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(catL(s.cat), cx, 28);
 
   /* ── orbits + logo center ── */
-  var lcx=cx, lcy=H*.33, lr3=140;
+  var lcx=cx, lcy=H*.27, lr3=140;
   var orbs=[{rx:220,ry:65,rot:.4},{rx:275,ry:100,rot:1.2},{rx:325,ry:132,rot:2.1},{rx:368,ry:160,rot:3.2}];
   orbs.forEach(function(o,i){
     ctx.save(); ctx.translate(lcx,lcy); ctx.rotate(o.rot);
@@ -2855,8 +2855,8 @@ function saveCardImage(id){
     }
 
     /* ── footer ── */
-    var footY=H-110;
-    divLine(footY-GAP);
+    var footY=H-140;
+    divLine(footY-GAP*1.5);
     ctx.font='bold 50px Cinzel,serif'; ctx.fillStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.85)'; ctx.textAlign='center';
     ctx.fillText('☽ QAMAR', cx, footY);
     ctx.font='32px Tajawal,Arial'; ctx.fillStyle='rgba(255,255,255,.28)';
