@@ -3246,7 +3246,7 @@ function setModType(type, init){
       row.appendChild(btn);
     }
   } else if(type==='card'&&curSub.cardPrices&&curSub.cardPrices.length){
-    if(init) modCardIdx=0;
+    if(init && !(_cosmicSelected[curSub.id]&&_cosmicSelected[curSub.id].cardIdx!==null)) modCardIdx=0;
     for(var i=0;i<curSub.cardPrices.length;i++){
       var cp=curSub.cardPrices[i];
       var isActive=(i===modCardIdx);
