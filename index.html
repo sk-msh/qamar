@@ -1223,9 +1223,108 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
   background:linear-gradient(135deg,rgba(0,122,61,.14),rgba(0,111,194,.09));
   color:var(--green);border-color:rgba(0,122,61,.28);
 }
+
+/* ── ADMIN LOGIN SCREEN ── */
+#admin-login-screen{
+  position:fixed;inset:0;z-index:99999;
+  background:#04050f;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+#admin-login-screen.hide{display:none}
+.al-box{
+  width:min(420px,100%);
+  background:rgba(8,13,30,.98);
+  border:1.5px solid rgba(108,43,217,.4);
+  border-radius:24px;
+  padding:clamp(28px,6vw,44px) clamp(20px,5vw,36px);
+  box-shadow:0 0 60px rgba(108,43,217,.25),0 0 120px rgba(108,43,217,.1);
+  position:relative;overflow:hidden;
+}
+.al-box::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(108,43,217,.18) 0,transparent 70%);
+  pointer-events:none;
+}
+.al-moon{font-size:2.4rem;text-align:center;margin-bottom:6px;filter:drop-shadow(0 0 10px #c8d8ff)}
+.al-logo{font-family:'Cinzel',serif;font-size:1.7rem;font-weight:900;text-align:center;margin-bottom:4px;
+  background:linear-gradient(135deg,#c8d8ff,#6c2bd9,#e040fb);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.al-sub{text-align:center;color:var(--muted);font-size:.78rem;margin-bottom:28px;letter-spacing:1px}
+.al-field{margin-bottom:14px}
+.al-field label{display:block;font-size:.76rem;font-weight:700;color:var(--muted);margin-bottom:6px}
+.al-field input{
+  width:100%;padding:12px 14px;border-radius:12px;
+  border:1.5px solid rgba(108,43,217,.3);
+  background:rgba(108,43,217,.06);
+  color:var(--txt);font-family:inherit;font-size:.94rem;outline:none;
+  transition:border-color .25s;-webkit-appearance:none;
+}
+.al-field input:focus{border-color:var(--pur)}
+.al-pass-wrap{position:relative}
+.al-pass-wrap input{padding-left:42px}
+.al-eye{position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:.9rem;cursor:pointer;padding:4px}
+.al-btn{
+  width:100%;padding:13px;border-radius:14px;border:none;font-family:inherit;font-size:.96rem;font-weight:800;
+  background:linear-gradient(135deg,var(--pur),var(--pink));color:#fff;
+  box-shadow:0 0 24px rgba(108,43,217,.4);cursor:pointer;margin-top:6px;
+  transition:opacity .2s,transform .15s;
+}
+.al-btn:hover{opacity:.92}.al-btn:active{transform:scale(.97)}
+.al-err{
+  text-align:center;font-size:.78rem;color:var(--red);
+  margin-top:10px;min-height:18px;font-weight:700;
+}
+.al-forgot{
+  text-align:center;margin-top:14px;font-size:.76rem;color:var(--muted);
+}
+.al-forgot a{color:var(--cyan);text-decoration:none;cursor:pointer;font-weight:700}
+.al-forgot a:hover{text-decoration:underline}
+.al-shake{animation:alShake .4s ease}
+@keyframes alShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+/* reset panel داخل صندوق الدخول */
+#al-reset-panel{display:none;margin-top:16px;padding-top:16px;border-top:1px solid rgba(108,43,217,.2)}
+#al-reset-panel.show{display:block}
+.al-reset-msg{font-size:.78rem;color:var(--green);text-align:center;margin-top:8px;min-height:16px}
 </style>
 </head>
 <body>
+
+<!-- ════════ ADMIN LOGIN SCREEN ════════ -->
+<div id="admin-login-screen" class="hide">
+  <div class="al-box" id="al-box">
+    <div class="al-moon">🌙</div>
+    <div class="al-logo">QAMAR</div>
+    <div class="al-sub">لوحة تحكم الأدمن</div>
+
+    <div class="al-field">
+      <label>اسم المستخدم</label>
+      <input type="text" id="al-user" placeholder="admin" autocomplete="username" autocapitalize="none" spellcheck="false">
+    </div>
+    <div class="al-field">
+      <label>كلمة السر</label>
+      <div class="al-pass-wrap">
+        <input type="password" id="al-pass" placeholder="••••••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+        <button class="al-eye" type="button" onclick="togglePassVis()" id="al-eye-btn" title="إظهار/إخفاء">👁</button>
+      </div>
+    </div>
+    <button class="al-btn" onclick="doAdminLogin()">دخول ← </button>
+    <div class="al-err" id="al-err"></div>
+
+    <div class="al-forgot">
+      <a onclick="showResetPanel()">نسيت كلمة السر؟</a>
+    </div>
+
+    <!-- Reset Panel -->
+    <div id="al-reset-panel">
+      <div class="al-field" style="margin-bottom:10px">
+        <label>البريد الإلكتروني للتحقق</label>
+        <input type="email" id="al-reset-email" placeholder="shtiwem6@gmail.com" autocomplete="email">
+      </div>
+      <button class="al-btn" style="background:linear-gradient(135deg,#00b090,#007060);box-shadow:none" onclick="doSendReset()">إرسال رابط إعادة التعيين 📧</button>
+      <div class="al-reset-msg" id="al-reset-msg"></div>
+    </div>
+  </div>
+</div>
 
 <!-- LOADER -->
 <div id="loader">
@@ -1568,7 +1667,7 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
       <div class="mod-btns">
         <button class="mod-cta mod-buy-btn" onclick="orderNow()">اطلب عبر واتساب 💬</button>
         <button class="mod-cart" onclick="addToCartMod()">🛒 أضف للسلة</button>
-        <button class="mod-icon-btn" onclick="saveModCard()" title="حفظ البطاقة">💾</button>
+        <button id="mod-save-btn" class="mod-icon-btn" onclick="saveModCard()" title="حفظ البطاقة">💾</button>
       </div>
       <div class="mod-note">⚡ تسليم فوري · ضمان كامل · دعم 24/7</div>
     </div>
@@ -1969,6 +2068,23 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
           </div>
         </div>
       </div>
+      <!-- تغيير كلمة السر -->
+      <div class="sp-block" style="margin-top:16px;border:1.5px solid rgba(108,43,217,.3);background:rgba(108,43,217,.04);border-radius:14px;padding:16px">
+        <div class="sp-block-title" style="color:var(--pur)">🔒 تغيير كلمة سر الأدمن</div>
+        <div class="sp-grid">
+          <div>
+            <div class="sf"><label class="sl">كلمة السر الحالية</label><input class="si" type="password" id="chp-old" placeholder="••••••••"></div>
+            <div class="sf"><label class="sl">كلمة السر الجديدة</label><input class="si" type="password" id="chp-new" placeholder="8 أحرف على الأقل"></div>
+            <div class="sf"><label class="sl">تأكيد كلمة السر</label><input class="si" type="password" id="chp-confirm" placeholder="أعد الإدخال" onkeydown="if(event.key==='Enter')changeAdminPass()"></div>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <div style="width:100%">
+              <button class="sbn" style="width:100%" onclick="changeAdminPass()">🔐 حفظ كلمة السر الجديدة</button>
+              <p id="chp-msg" style="font-size:.76rem;margin-top:8px;min-height:16px;text-align:center"></p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div><!-- end sp-content -->
@@ -2140,14 +2256,58 @@ var SB_URL = 'https://uzqkfulbdeuzcqqnphwt.supabase.co';
 var SB_KEY = 'sb_publishable_Zb130VooEdAkHrlFMSeLaw_CHy7q-Oq';
 var SB_TABLE = 'qamar_config';
 var SB_ROW_ID = 'main';
-var ADMIN_PASS = 'qamar2025admin';
+/* ════════════════════════
+   AUTH SYSTEM — نظام المصادقة الآمن
+════════════════════════ */
+var ADMIN_USER_KEY = 'qamar_admin';
+var ADMIN_PASS_HASH_KEY = 'qamar_admin_pass_hash';
+var ADMIN_SESSION_KEY = 'qamar_admin_session';
+var ADMIN_SESSION_TTL = 8 * 60 * 60 * 1000; /* 8 ساعات */
+var RESET_EMAIL = 'shtiwem6@gmail.com';
 
-/* كشف وضع الأدمن: فقط عبر #admin في الرابط */
+async function sha256(str){
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+function getStoredPassHash(){
+  try{ return localStorage.getItem(ADMIN_PASS_HASH_KEY)||''; }catch(e){ return ''; }
+}
+
+async function initPassHash(){
+  try{
+    if(!localStorage.getItem(ADMIN_PASS_HASH_KEY)){
+      var h = await sha256('qamar2025admin');
+      localStorage.setItem(ADMIN_PASS_HASH_KEY, h);
+    }
+  }catch(e){}
+}
+
+function isAdminSessionValid(){
+  try{
+    var sess = JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY)||'null');
+    if(!sess) return false;
+    if(Date.now() - sess.ts > ADMIN_SESSION_TTL){ sessionStorage.removeItem(ADMIN_SESSION_KEY); return false; }
+    return sess.valid === true;
+  }catch(e){ return false; }
+}
+
+function createAdminSession(){
+  try{ sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({valid:true, ts:Date.now()})); }catch(e){}
+}
+
+function destroyAdminSession(){
+  try{ sessionStorage.removeItem(ADMIN_SESSION_KEY); }catch(e){}
+  try{ localStorage.removeItem('qamar_admin_mode'); }catch(e){}
+}
+
+/* IS_ADMIN: صحيح فقط إذا كان #admin في الرابط + جلسة صالحة */
 var IS_ADMIN = (function(){
   try{
-    if(window.location.hash==='#admin'||window.location.search.indexOf('admin')>=0) return true;
-  }catch(e){}
-  return false;
+    var hasAdminHash = window.location.hash==='#admin' || window.location.search.indexOf('admin')>=0;
+    if(!hasAdminHash) return false;
+    return isAdminSessionValid();
+  }catch(e){ return false; }
 })();
 
 async function sbFetch(path, opts){
@@ -3661,7 +3821,7 @@ function buildCosmicCard(sub){
     +'<div class="cosmic-footer" style="background:'+fb+';border-top:1px solid '+(lm?'rgba(90,34,200,.2)':'#1e1660')+'">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
     +'<div>'+availHTML(sub)+'</div>'
-    +'<button class="share-btn" onclick="event.stopPropagation();saveCardImage('+sub.id+')" title="حفظ البطاقة كصورة">💾</button>'
+    +(IS_ADMIN ? '<button class="share-btn" onclick="event.stopPropagation();saveCardImage('+sub.id+')" title="حفظ البطاقة كصورة">💾</button>' : '')
     +'</div>'
     +'<div class="cosmic-plan-title" style="color:'+(lm?'#6a4aaa':'#6050a0')+'">'+pt+'</div>'
     +'<div class="cosmic-plans">'+pH+'</div>'
@@ -4562,8 +4722,9 @@ function openShareWhatsapp(){
   window.open('https://wa.me/?text='+msg,'_blank');
 }
 function logoutAdmin(){
-  if(!confirm('تسجيل الخروج من وضع الأدمن؟ ستحتاج رابط #admin للعودة.')) return;
-  try{ localStorage.removeItem('qamar_admin_mode'); }catch(e){}
+  if(!confirm('تسجيل الخروج من وضع الأدمن؟')) return;
+  destroyAdminSession();
+  IS_ADMIN = false;
   toast('🔓 تم تسجيل الخروج'); setTimeout(function(){ location.reload(); },1200);
 }
 function exportBackup(){ saveAll(); try{ var raw=localStorage.getItem(STORE_KEY)||'{}'; var blob=new Blob([raw],{type:'application/json'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='qamar_backup_'+Date.now()+'.json'; a.click(); URL.revokeObjectURL(url); toast('📥 تم التصدير'); }catch(e){ toast('❌ فشل التصدير'); } }
@@ -4837,21 +4998,6 @@ initWelcome();
 setTimeout(updateYdPreview, 500);
 setTimeout(updateSavePct, 100);
 
-/* إخفاء زر الإعدادات للزبائن */
-(function(){
-  if(!IS_ADMIN){
-    var btn=G('settings-btn'); if(btn) btn.style.display='none';
-    /* تأكد من حذف أي admin_mode قديم محفوظ */
-    try{ localStorage.removeItem('qamar_admin_mode'); }catch(e){}
-  } else {
-    /* إظهار مؤشر وضع الأدمن */
-    var ind=document.createElement('div');
-    ind.innerHTML='🔐 وضع الأدمن';
-    ind.style.cssText='position:fixed;bottom:calc(var(--sb,0px) + 70px);left:50%;transform:translateX(-50%);background:rgba(108,43,217,.85);color:#fff;font-size:.7rem;padding:4px 12px;border-radius:20px;z-index:9000;pointer-events:none;backdrop-filter:blur(8px);font-family:Tajawal,sans-serif;white-space:nowrap;border:1px solid rgba(255,255,255,.15)';
-    document.body.appendChild(ind);
-    setTimeout(function(){ ind.style.opacity='0'; ind.style.transition='opacity 1s'; setTimeout(function(){ if(ind.parentNode) ind.parentNode.removeChild(ind); },1000); },4000);
-  }
-})();
 /* ── Dynamic year ── */
 var ftY=G('ft-year'); if(ftY) ftY.textContent=new Date().getFullYear();
 /* ── Debounce saveAll ── */
@@ -4869,6 +5015,183 @@ updateCartUI=function(){
   var cnt=cart.length;
   document.title=(cnt>0?'('+cnt+') ':'')+'قمر | متجر الاشتراكات الرقمية';
 };
+
+/* ════════════════════════
+   AUTH FUNCTIONS
+════════════════════════ */
+function togglePassVis(){
+  var inp=G('al-pass'), btn=G('al-eye-btn');
+  if(!inp) return;
+  var show = inp.type==='password';
+  inp.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈' : '👁';
+}
+
+function showResetPanel(){
+  var p=G('al-reset-panel'); if(!p) return;
+  p.classList.add('show');
+}
+
+async function doAdminLogin(){
+  var userEl=G('al-user'), passEl=G('al-pass'), errEl=G('al-err'), box=G('al-box');
+  if(!userEl||!passEl) return;
+  var user=userEl.value.trim();
+  var pass=passEl.value;
+  errEl.textContent='';
+  if(!user||!pass){ errEl.textContent='أدخل اسم المستخدم وكلمة السر'; return; }
+  if(user !== ADMIN_USER_KEY){ box.classList.add('al-shake'); setTimeout(function(){ box.classList.remove('al-shake'); },400); errEl.textContent='اسم المستخدم أو كلمة السر غير صحيحة'; return; }
+  var inputHash = await sha256(pass);
+  var storedHash = getStoredPassHash();
+  if(!storedHash){ await initPassHash(); storedHash = getStoredPassHash(); }
+  if(inputHash !== storedHash){
+    box.classList.add('al-shake'); setTimeout(function(){ box.classList.remove('al-shake'); },400);
+    errEl.textContent='اسم المستخدم أو كلمة السر غير صحيحة';
+    return;
+  }
+  /* نجح الدخول */
+  createAdminSession();
+  G('admin-login-screen').classList.add('hide');
+  IS_ADMIN = true;
+  /* إعادة تهيئة الصفحة بوضع الأدمن */
+  initAfterAuth();
+}
+
+function initAfterAuth(){
+  /* إظهار زر الإعدادات وزر حفظ البطاقة */
+  var sb=G('settings-btn'); if(sb) sb.style.display='';
+  var ms=G('mod-save-btn'); if(ms) ms.style.display='';
+  /* تحميل البيانات */
+  loadAll(); buildCatChips(); renderCards(); applyCardText(); updateCartUI(); buildAtom();
+  /* مؤشر وضع الأدمن */
+  var ind=document.createElement('div');
+  ind.innerHTML='🔐 وضع الأدمن';
+  ind.style.cssText='position:fixed;bottom:calc(var(--sb,0px) + 70px);left:50%;transform:translateX(-50%);background:rgba(108,43,217,.85);color:#fff;font-size:.7rem;padding:4px 12px;border-radius:20px;z-index:9000;pointer-events:none;backdrop-filter:blur(8px);font-family:Tajawal,sans-serif;white-space:nowrap;border:1px solid rgba(255,255,255,.15)';
+  document.body.appendChild(ind);
+  setTimeout(function(){ ind.style.opacity='0'; ind.style.transition='opacity 1s'; setTimeout(function(){ if(ind.parentNode) ind.parentNode.removeChild(ind); },1000); },4000);
+  initShareLink();
+}
+
+async function doSendReset(){
+  var emailEl=G('al-reset-email'), msgEl=G('al-reset-msg');
+  if(!emailEl||!msgEl) return;
+  var email = emailEl.value.trim().toLowerCase();
+  if(email !== RESET_EMAIL.toLowerCase()){ msgEl.style.color='var(--red)'; msgEl.textContent='البريد الإلكتروني غير مطابق'; return; }
+  /* توليد رمز مؤقت وحفظه */
+  var token = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+  var expiry = Date.now() + 15 * 60 * 1000; /* 15 دقيقة */
+  try{ localStorage.setItem('qamar_reset_token', JSON.stringify({token:token, exp:expiry})); }catch(e){}
+  var resetUrl = window.location.href.split('#')[0].split('?')[0] + '?reset=' + token + '#admin';
+  /* إرسال عبر EmailJS */
+  msgEl.style.color='var(--muted)'; msgEl.textContent='جاري الإرسال...';
+  try{
+    var resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        service_id: 'qamar_email_service',
+        template_id: 'qamar_reset_template',
+        user_id: 'qamar_emailjs_public_key',
+        template_params: {
+          to_email: RESET_EMAIL,
+          reset_url: resetUrl,
+          expires_in: '15 دقيقة'
+        }
+      })
+    });
+    if(resp.ok){
+      msgEl.style.color='var(--green)'; msgEl.textContent='✅ تم الإرسال إلى ' + RESET_EMAIL;
+    } else {
+      /* fallback: افتح عميل البريد مباشرة */
+      var subject = encodeURIComponent('إعادة تعيين كلمة سر قمر');
+      var body = encodeURIComponent('رابط إعادة التعيين (صالح 15 دقيقة):\n\n' + resetUrl + '\n\nإذا لم تطلب هذا تجاهل الرسالة.');
+      window.open('mailto:'+RESET_EMAIL+'?subject='+subject+'&body='+body);
+      msgEl.style.color='var(--cyan)'; msgEl.textContent='📧 تم فتح تطبيق البريد — أرسل الرسالة يدوياً';
+    }
+  }catch(e){
+    var subject2 = encodeURIComponent('إعادة تعيين كلمة سر قمر');
+    var body2 = encodeURIComponent('رابط إعادة التعيين (صالح 15 دقيقة):\n\n' + resetUrl + '\n\nإذا لم تطلب هذا تجاهل الرسالة.');
+    window.open('mailto:'+RESET_EMAIL+'?subject='+subject2+'&body='+body2);
+    msgEl.style.color='var(--cyan)'; msgEl.textContent='📧 تم فتح تطبيق البريد — أرسل الرسالة يدوياً';
+  }
+}
+
+async function changeAdminPass(){
+  var oldEl=G('chp-old'), newEl=G('chp-new'), confEl=G('chp-confirm'), msgEl=G('chp-msg');
+  if(!oldEl||!newEl||!confEl) return;
+  var oldPass=oldEl.value, newPass=newEl.value, confPass=confEl.value;
+  msgEl.style.color='var(--red)';
+  if(!oldPass||!newPass||!confPass){ msgEl.textContent='يرجى ملء جميع الحقول'; return; }
+  if(newPass.length<8){ msgEl.textContent='كلمة السر الجديدة قصيرة جداً (8 أحرف على الأقل)'; return; }
+  if(newPass!==confPass){ msgEl.textContent='كلمتا السر الجديدتان غير متطابقتين'; return; }
+  var oldHash = await sha256(oldPass);
+  if(oldHash !== getStoredPassHash()){ msgEl.textContent='كلمة السر الحالية غير صحيحة'; return; }
+  var newHash = await sha256(newPass);
+  localStorage.setItem(ADMIN_PASS_HASH_KEY, newHash);
+  oldEl.value=''; newEl.value=''; confEl.value='';
+  msgEl.style.color='var(--green)'; msgEl.textContent='✅ تم تغيير كلمة السر بنجاح';
+  setTimeout(function(){ msgEl.textContent=''; },4000);
+}
+
+async function checkResetToken(){
+  /* تحقق من رابط الـ reset */
+  try{
+    var params = new URLSearchParams(window.location.search);
+    var token = params.get('reset');
+    if(!token) return;
+    var stored = JSON.parse(localStorage.getItem('qamar_reset_token')||'null');
+    if(!stored || stored.token !== token || Date.now() > stored.exp){
+      alert('رابط إعادة التعيين منتهي الصلاحية أو غير صالح.');
+      return;
+    }
+    /* الرابط صالح — اطلب كلمة السر الجديدة */
+    localStorage.removeItem('qamar_reset_token');
+    var newPass = prompt('أدخل كلمة السر الجديدة (8 أحرف على الأقل):');
+    if(!newPass || newPass.length < 8){ alert('كلمة السر قصيرة جداً — لم يتم التغيير.'); return; }
+    var confirmPass = prompt('أعد إدخال كلمة السر الجديدة:');
+    if(newPass !== confirmPass){ alert('كلمتا السر غير متطابقتين — لم يتم التغيير.'); return; }
+    var newHash = await sha256(newPass);
+    localStorage.setItem(ADMIN_PASS_HASH_KEY, newHash);
+    /* نظّف الرابط */
+    var cleanUrl = window.location.href.split('?')[0] + '#admin';
+    history.replaceState(null,'',cleanUrl);
+    alert('✅ تم تغيير كلمة السر بنجاح. يمكنك الدخول الآن.');
+  }catch(e){ console.warn('Reset token check error',e); }
+}
+
+/* ════════════════════════
+   AUTH INIT — يعمل عند تحميل الصفحة
+════════════════════════ */
+(function(){
+  var hasAdminHash = window.location.hash==='#admin' || window.location.search.indexOf('admin')>=0 || window.location.search.indexOf('reset')>=0;
+  if(!hasAdminHash){
+    /* وضع الزبون — اخفِ كل شيء خاص بالأدمن وانتهِ */
+    var sb=G('settings-btn'); if(sb) sb.style.display='none';
+    var ms=G('mod-save-btn'); if(ms) ms.style.display='none';
+    return;
+  }
+  /* تحقق من رابط reset أولاً */
+  checkResetToken().then(function(){
+    /* هل الجلسة صالحة؟ */
+    if(IS_ADMIN){
+      /* مسجّل دخول بالفعل */
+      var sb=G('settings-btn'); if(sb) sb.style.display='';
+      var ms=G('mod-save-btn'); if(ms) ms.style.display='';
+      var ind=document.createElement('div');
+      ind.innerHTML='🔐 وضع الأدمن';
+      ind.style.cssText='position:fixed;bottom:calc(var(--sb,0px) + 70px);left:50%;transform:translateX(-50%);background:rgba(108,43,217,.85);color:#fff;font-size:.7rem;padding:4px 12px;border-radius:20px;z-index:9000;pointer-events:none;backdrop-filter:blur(8px);font-family:Tajawal,sans-serif;white-space:nowrap;border:1px solid rgba(255,255,255,.15)';
+      document.body.appendChild(ind);
+      setTimeout(function(){ ind.style.opacity='0'; ind.style.transition='opacity 1s'; setTimeout(function(){ if(ind.parentNode) ind.parentNode.removeChild(ind); },1000); },4000);
+    } else {
+      /* يحتاج تسجيل دخول — أظهر شاشة الدخول */
+      initPassHash().then(function(){
+        var sb=G('settings-btn'); if(sb) sb.style.display='none';
+        var ms=G('mod-save-btn'); if(ms) ms.style.display='none';
+        G('admin-login-screen').classList.remove('hide');
+        setTimeout(function(){ var u=G('al-user'); if(u) u.focus(); }, 100);
+      });
+    }
+  });
+})();
 </script>
 </body>
 </html>
