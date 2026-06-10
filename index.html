@@ -462,7 +462,7 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
   }
   .mod-hero canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:28px 28px 0 0}
   .mod-hero-overlay{border-radius:28px 28px 0 0}
-  .mod-hero-logo-wrap{top:50%;left:50%;transform:translate(-50%,-50%)}
+  .mod-hero-logo-wrap{top:40%;left:50%;transform:translate(-50%,-50%)}
   .mod-hero-logo{
     width:9svh;height:9svh;font-size:clamp(1rem,4svh,2rem);
     border-width:2px;
@@ -2822,18 +2822,9 @@ function startModCanvas(canvas, accentHex, logoBg){
   try{
     var ac=h2r(accentHex||'#7c5fe6');
     var heroEl=G('mod-hero');
-    var logoWrap=heroEl?heroEl.querySelector('.mod-hero-logo-wrap'):null;
     var W=canvas.offsetWidth||480, H=heroEl?heroEl.offsetHeight:220;
     canvas.width=W; canvas.height=H;
-    /* cy = مركز اللوقو الفعلي داخل الـ hero */
-    var cy=H*0.28;
-    if(logoWrap&&heroEl){
-      var lRect=logoWrap.getBoundingClientRect();
-      var hRect=heroEl.getBoundingClientRect();
-      cy=lRect.top+lRect.height/2-hRect.top;
-      if(cy<20||cy>H) cy=H*0.28; /* fallback */
-    }
-    var cx=W/2, tC=0;
+    var cx=W/2, cy=H*0.40, tC=0;
     var STARS=[]; for(var i=0;i<28;i++) STARS.push([Math.random()*W,Math.random()*H,i%3===0?1.4:0.7]);
     function df(){
       var lm=isLightMode();
