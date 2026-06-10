@@ -2782,6 +2782,11 @@ function saveCardImage(id){
   function secLbl(txt,y,sc){ var fs=sc||42; ctx.font='bold '+fs+'px Tajawal,Arial'; ctx.fillStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.85)'; ctx.textAlign='center'; ctx.fillText(txt,cx,y); }
 
   function drawText(){
+    /* clip everything to above FOOTER_Y */
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, W, FOOTER_Y);
+    ctx.clip();
     /* ── measure everything first ── */
     var desc2=(s.desc||'').trim();
     var plans=[], isCard=s.serviceType==='card';
@@ -2897,7 +2902,8 @@ function saveCardImage(id){
       });
     }
 
-    /* ── footer: always at fixed position ── */
+    /* ── footer: always at fixed position, outside clip ── */
+    ctx.restore(); /* remove clip — footer draws freely */
     divLine(FOOTER_Y-Math.round(GAP*1.2));
     ctx.font='bold 50px Cinzel,serif'; ctx.fillStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.85)'; ctx.textAlign='center';
     ctx.textBaseline='top'; ctx.fillText('☽ QAMAR', cx, FOOTER_Y+10);
