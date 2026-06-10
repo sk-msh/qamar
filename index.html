@@ -2691,25 +2691,39 @@ function openMod(id){
   G('mtype-month').style.display=hm?'':'none'; G('mtype-card').style.display=hc?'':'none';
   modType=hm?'monthly':'card'; modCardIdx=0;
 
+  /* ── قراءة الاختيار من الكارد ── */
   var cosmicSelected=null, cosmicCardIdx=null;
   var sel=_cosmicSelected[id];
   if(sel){
     if(sel.months!==null) cosmicSelected=sel.months;
     if(sel.cardIdx!==null) cosmicCardIdx=sel.cardIdx;
-  } else {
-    /* fallback: read DOM */
+  }
+  /* fallback: DOM */
+  if(cosmicSelected===null&&cosmicCardIdx===null){
     var cosmicBtns=document.querySelectorAll('.cosmic-plan-btn.active[data-sub-id="'+id+'"]');
     if(cosmicBtns.length>0){
       var dm=parseInt(cosmicBtns[0].getAttribute('data-months'));
       var dc=parseInt(cosmicBtns[0].getAttribute('data-card-idx'));
       if(dm&&dm>0) cosmicSelected=dm;
-      if(!isNaN(dc)&&dc>=0) cosmicCardIdx=dc;
+      else if(!isNaN(dc)&&dc>=0) cosmicCardIdx=dc;
     }
   }
-  if(cosmicSelected&&hm){ modMonths=cosmicSelected; }
-  else if(cosmicCardIdx!==null&&hc){ modCardIdx=cosmicCardIdx; modType='card'; }
-  else if(hm&&isYearly){ var mp12=null,mpLast=null; for(var j=0;j<s.monthlyPrices.length;j++){ if(s.monthlyPrices[j].months===12) mp12=s.monthlyPrices[j]; mpLast=s.monthlyPrices[j]; } modMonths=mp12?12:mpLast.months; }
-  else{ modMonths=hm?s.monthlyPrices[0].months:1; }
+  /* طبّق الاختيار قبل setModType */
+  if(cosmicSelected!==null&&hm){
+    modMonths=cosmicSelected;
+  } else if(cosmicCardIdx!==null&&hc){
+    modCardIdx=cosmicCardIdx;
+    modType='card';
+  } else if(hm&&isYearly){
+    var mp12=null,mpLast=null;
+    for(var j=0;j<s.monthlyPrices.length;j++){
+      if(s.monthlyPrices[j].months===12) mp12=s.monthlyPrices[j];
+      mpLast=s.monthlyPrices[j];
+    }
+    modMonths=mp12?12:mpLast.months;
+  } else if(hm){
+    modMonths=s.monthlyPrices[0].months;
+  }
 
   setModType(modType, true);
   G('modov').classList.add('open'); document.body.style.overflow='hidden';
@@ -3246,7 +3260,7 @@ function setModType(type, init){
       row.appendChild(btn);
     }
   } else if(type==='card'&&curSub.cardPrices&&curSub.cardPrices.length){
-    if(init && !(_cosmicSelected[curSub.id]&&_cosmicSelected[curSub.id].cardIdx!==null)) modCardIdx=0;
+    /* modCardIdx already set by openMod — don't reset on init */
     for(var i=0;i<curSub.cardPrices.length;i++){
       var cp=curSub.cardPrices[i];
       var isActive=(i===modCardIdx);
@@ -3489,6 +3503,14 @@ function buildCosmicCard(sub){
 
   var pH=plansToShow.map(function(p,i){
     var isActive = (i === defaultPlanIdx);
+
+    /* سجّل الاختيار الافتراضي في _cosmicSelected إذا لم يكن هناك اختيار سابق */
+    if(isActive && !_cosmicSelected[sub.id]){
+      _cosmicSelected[sub.id] = {
+        months: isCard ? null : (p.months||null),
+        cardIdx: isCard ? i : null
+      };
+    }
 
     var displayPrice = p.price || 0;
     var displayOrig  = p.orig  || 0;
