@@ -462,7 +462,7 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
   }
   .mod-hero canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:28px 28px 0 0}
   .mod-hero-overlay{border-radius:28px 28px 0 0}
-  .mod-hero-logo-wrap{top:60%;left:50%;transform:translate(-50%,-50%)}
+  .mod-hero-logo-wrap{top:46%;left:50%;transform:translate(-50%,-50%)}
   .mod-hero-logo{
     width:9svh;height:9svh;font-size:clamp(1rem,4svh,2rem);
     border-width:2px;
@@ -470,23 +470,28 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
   }
   .mod-cl{width:7vw;height:7vw;min-width:24px;min-height:24px;font-size:3.5vw;top:2vw;left:2vw}
 
-  /* ── body: fills rest, no scroll ── */
+  /* ── body ── */
   .mod-body{
     flex:1;min-height:0;overflow:hidden;
     display:flex;flex-direction:column;
-    padding:1svh 4vw 1.5svh;
-    gap:.55svh;
+    padding:.3svh 4vw 1.5svh;
+    gap:.4svh;
   }
 
   /* name */
   .mod-nm{font-size:clamp(.9rem,3.2svh,1.4rem);line-height:1.05;text-align:center;margin:0;flex-shrink:0}
-  /* category */
-  .mod-cat{font-size:clamp(.55rem,1.7svh,.72rem);text-align:center;margin:0;flex-shrink:0}
-  /* rating */
-  .mod-st{font-size:clamp(.55rem,1.7svh,.72rem);text-align:center;margin:0;flex-shrink:0}
-  /* availability */
-  #mod-avail-placeholder{text-align:center;margin:0;flex-shrink:0}
-  #mod-avail-placeholder .avail-badge{font-size:clamp(.5rem,1.5svh,.65rem);padding:1px 7px;border-radius:9px}
+
+  /* info row: avail(right) + cat(center) + rating(left) */
+  .mod-cat{display:none}
+  .mod-st{display:none}
+  #mod-avail-placeholder{display:none}
+  .mod-info-row{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-shrink:0;gap:2vw;
+  }
+  .mod-info-avail{font-size:clamp(.46rem,1.4svh,.6rem);text-align:right;flex-shrink:0}
+  .mod-info-cat{font-size:clamp(.5rem,1.6svh,.66rem);text-align:center;flex:1;color:#5a4a98}
+  .mod-info-rating{font-size:clamp(.5rem,1.6svh,.66rem);text-align:left;flex-shrink:0;color:var(--gold)}
 
   /* plans chips */
   .mod-plans-grid{display:flex;flex-wrap:nowrap;gap:1.2vw;flex-shrink:0;margin:0}
@@ -1563,6 +1568,12 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
       <div class="mod-cat" id="mcat"></div>
       <div class="mod-st" id="mst"></div>
       <div id="mod-avail-placeholder"></div>
+      <!-- mobile info row: avail + cat + rating -->
+      <div class="mod-info-row" id="mod-info-row">
+        <span class="mod-info-avail" id="mod-info-avail"></span>
+        <span class="mod-info-cat" id="mod-info-cat"></span>
+        <span class="mod-info-rating" id="mod-info-rating"></span>
+      </div>
       <!-- type tabs hidden - auto detected -->
       <div class="mod-type-row" style="display:none">
         <button class="mtype on" id="mtype-month" onclick="setModType('monthly')">📅 شهري</button>
@@ -2750,6 +2761,11 @@ function openMod(id){
 
   G('mnm').textContent=s.name; G('mcat').textContent=catL(s.cat);
   G('mst').textContent=s5(s.rating)+' '+s.rating+' ('+s.rev.toLocaleString('ar')+' تقييم)';
+  /* mobile info row */
+  var infoAvail=G('mod-info-avail'), infoCat=G('mod-info-cat'), infoRating=G('mod-info-rating');
+  if(infoAvail) infoAvail.innerHTML=availHTML(s);
+  if(infoCat) infoCat.textContent=catL(s.cat);
+  if(infoRating) infoRating.textContent=s5(s.rating)+' '+s.rating;
   var feats=s.feats||[], fh=''; for(var i=0;i<feats.length;i++) fh+='<li><span class="mf-ico">✓</span>'+feats[i]+'</li>';
   G('mfeats').innerHTML=fh;
   var descEl=G('mod-desc'), descWrap=G('mod-desc-wrap');
