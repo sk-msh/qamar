@@ -2774,93 +2774,135 @@ function saveCardImage(id){
     drawText();
   }
 
+  /* ── fixed footer zone ── */
+  var FOOT_H=160;        /* مساحة الـ footer من الأسفل */
+  var FOOTER_Y=H-FOOT_H; /* الخط الفاصل الثابت */
+
   function divLine(y){ ctx.strokeStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.3)'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(80,y); ctx.lineTo(W-80,y); ctx.stroke(); }
-  function secLbl(txt,y){ ctx.font='bold 42px Tajawal,Arial'; ctx.fillStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.85)'; ctx.textAlign='center'; ctx.fillText(txt,cx,y); }
+  function secLbl(txt,y,sc){ var fs=sc||42; ctx.font='bold '+fs+'px Tajawal,Arial'; ctx.fillStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.85)'; ctx.textAlign='center'; ctx.fillText(txt,cx,y); }
 
   function drawText(){
-    var GAP=38;
-    /* service name */
-    var ty=lcy+lr3+GAP;
-    ctx.font='bold 112px Tajawal,Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
-    ctx.fillStyle='#ffffff'; ctx.fillText(s.name, cx, ty);
-    /* desc short */
+    /* ── measure everything first ── */
     var desc2=(s.desc||'').trim();
-    ctx.font='38px Tajawal,Arial'; ctx.fillStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.9)';
-    ctx.fillText(catL(s.cat), cx, ty+124);
-    ctx.font='36px Tajawal,Arial'; ctx.fillStyle='#ffd740';
-    ctx.fillText(s5(s.rating)+' '+s.rating+' ('+s.rev.toLocaleString('ar')+')', cx, ty+174);
-
-    /* ── plans ── */
-    var nextY=ty+240;
-    divLine(nextY); nextY+=GAP;
-    secLbl('باقات الاشتراك', nextY); nextY+=58;
     var plans=[], isCard=s.serviceType==='card';
     if(isCard&&s.cardPrices&&s.cardPrices.length) plans=s.cardPrices;
     else if(s.monthlyPrices&&s.monthlyPrices.length) plans=s.monthlyPrices;
-    var maxP=Math.min(plans.length,3), gap2=18;
-    var bw3=(W-160-(maxP-1)*gap2)/maxP, bh3=168, br3=22;
+    var feats2=s.feats||[];
+    var maxP=Math.min(plans.length,3);
+
+    /* estimate total content height */
+    var descLines=desc2?wrapText(ctx,desc2,'38px Tajawal,Arial',W-180):[];
+    var estH=(
+      128 +     /* name */
+      60  +     /* cat */
+      50  +     /* rating */
+      60  +     /* plans header+gap */
+      168 +     /* plans box */
+      (desc2?(60+descLines.length*54+40+50):0) +
+      (feats2.length?(60+Math.min(feats2.length,5)*84+30):0)
+    );
+
+    /* available zone: from logo bottom to footer line */
+    var startY=lcy+lr3;
+    var availH=FOOTER_Y-startY-40;
+
+    /* scale factor: compress if content overflows */
+    var sc=Math.min(1, availH/Math.max(estH,1));
+    sc=Math.max(sc,0.55); /* never below 55% */
+
+    var GAP=Math.round(38*sc);
+    var nameFS=Math.round(112*sc);
+    var catFS=Math.round(38*sc);
+    var ratingFS=Math.round(36*sc);
+    var secFS=Math.round(42*sc);
+    var planBH=Math.round(168*sc);
+    var planLbFS=Math.round(34*sc);
+    var planPrFS=Math.round(50*sc);
+    var planOrigFS=Math.round(28*sc);
+    var featH=Math.round(68*sc);
+    var featStep=Math.round(84*sc);
+    var featFS=Math.round(36*sc);
+    var descLineH=Math.round(54*sc);
+    var descFS=Math.round(38*sc);
+    var divGap=Math.round(GAP*.8);
+
+    var nextY=startY+Math.round(GAP*.8);
+
+    /* service name */
+    ctx.font='bold '+nameFS+'px Tajawal,Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillStyle='#ffffff'; ctx.fillText(s.name, cx, nextY);
+    nextY+=Math.round(nameFS*1.05)+Math.round(GAP*.3);
+
+    ctx.font=catFS+'px Tajawal,Arial'; ctx.fillStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.9)';
+    ctx.fillText(catL(s.cat), cx, nextY); nextY+=Math.round(catFS*1.2);
+
+    ctx.font=ratingFS+'px Tajawal,Arial'; ctx.fillStyle='#ffd740';
+    ctx.fillText(s5(s.rating)+' '+s.rating+' ('+s.rev.toLocaleString('ar')+')', cx, nextY);
+    nextY+=Math.round(ratingFS*1.2)+divGap;
+
+    /* ── plans ── */
+    divLine(nextY); nextY+=divGap;
+    secLbl('باقات الاشتراك', nextY, secFS); nextY+=Math.round(secFS*1.3);
+    var gap2=Math.round(18*sc);
+    var bw3=(W-160-(maxP-1)*gap2)/Math.max(maxP,1), br3=22;
     plans.slice(0,maxP).forEach(function(p,i){
       var bx3=W-80-(i+1)*(bw3+gap2)+gap2;
-      roundRect(ctx,bx3,nextY,bw3,bh3,br3);
+      roundRect(ctx,bx3,nextY,bw3,planBH,br3);
       ctx.fillStyle=i===0?'rgba('+ac.r+','+ac.g+','+ac.b+',.3)':'rgba(13,8,40,.85)'; ctx.fill();
       ctx.strokeStyle=i===0?'rgba('+ac.r+','+ac.g+','+ac.b+',.85)':'rgba('+ac.r+','+ac.g+','+ac.b+',.25)'; ctx.lineWidth=3; ctx.stroke();
       var lb=isCard?(p.name||'كرت'):(p.months===1?'شهري':p.months===12?'سنوي':p.months+' أشهر');
-      ctx.font='bold 34px Tajawal,Arial'; ctx.fillStyle='#9878cc'; ctx.textAlign='center';
-      ctx.fillText(lb, bx3+bw3/2, nextY+20);
+      ctx.font='bold '+planLbFS+'px Tajawal,Arial'; ctx.fillStyle='#9878cc'; ctx.textAlign='center';
+      ctx.fillText(lb, bx3+bw3/2, nextY+Math.round(planBH*.1));
       if(p.orig&&p.orig>p.price){
-        ctx.font='28px Tajawal,Arial'; ctx.fillStyle='rgba(255,80,80,.8)';
-        var ox=bx3+bw3/2, oy=nextY+66;
+        ctx.font=planOrigFS+'px Tajawal,Arial'; ctx.fillStyle='rgba(255,80,80,.8)';
+        var ox=bx3+bw3/2, oy=nextY+Math.round(planBH*.38);
         ctx.fillText(p.orig+' د.ل', ox, oy);
         var tw=ctx.measureText(p.orig+' د.ل').width;
         ctx.save(); ctx.strokeStyle='rgba(255,80,80,.8)'; ctx.lineWidth=2.5;
-        ctx.beginPath(); ctx.moveTo(ox-tw/2-4,oy+18); ctx.lineTo(ox+tw/2+4,oy+18); ctx.stroke(); ctx.restore();
-        ctx.font='bold 50px Tajawal,Arial'; ctx.fillStyle='#ffffff';
-        ctx.fillText((p.price||0)+' د.ل', bx3+bw3/2, nextY+100);
+        ctx.beginPath(); ctx.moveTo(ox-tw/2-4,oy+Math.round(planOrigFS*.55)); ctx.lineTo(ox+tw/2+4,oy+Math.round(planOrigFS*.55)); ctx.stroke(); ctx.restore();
+        ctx.font='bold '+planPrFS+'px Tajawal,Arial'; ctx.fillStyle='#ffffff';
+        ctx.fillText((p.price||0)+' د.ل', bx3+bw3/2, nextY+Math.round(planBH*.6));
       } else {
-        ctx.font='bold 50px Tajawal,Arial'; ctx.fillStyle='#ffffff';
-        ctx.fillText((p.price||0)+' د.ل', bx3+bw3/2, nextY+72);
+        ctx.font='bold '+planPrFS+'px Tajawal,Arial'; ctx.fillStyle='#ffffff';
+        ctx.fillText((p.price||0)+' د.ل', bx3+bw3/2, nextY+Math.round(planBH*.38));
       }
     });
-    nextY+=bh3+GAP*1.2;
+    nextY+=planBH+divGap;
 
     /* ── description ── */
     if(desc2){
-      divLine(nextY); nextY+=GAP;
-      secLbl('الوصف', nextY); nextY+=58;
-      var dLines=wrapText(ctx,desc2,'38px Tajawal,Arial',W-180);
-      var dBoxH=dLines.length*54+32;
+      divLine(nextY); nextY+=divGap;
+      secLbl('الوصف', nextY, secFS); nextY+=Math.round(secFS*1.3);
+      var dBoxH=descLines.length*descLineH+Math.round(32*sc);
       roundRect(ctx,60,nextY,W-120,dBoxH,20);
       ctx.fillStyle='rgba(13,8,40,.55)'; ctx.fill();
       ctx.strokeStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.2)'; ctx.lineWidth=2; ctx.stroke();
-      ctx.font='38px Tajawal,Arial'; ctx.fillStyle='#c8b4ff'; ctx.textAlign='center';
-      dLines.forEach(function(line,i){ ctx.fillText(line, cx, nextY+20+i*54); });
-      nextY+=dBoxH+GAP*1.2;
+      ctx.font=descFS+'px Tajawal,Arial'; ctx.fillStyle='#c8b4ff'; ctx.textAlign='center';
+      descLines.forEach(function(line,i){ ctx.fillText(line, cx, nextY+Math.round(20*sc)+i*descLineH); });
+      nextY+=dBoxH+divGap;
     }
 
     /* ── features ── */
-    var feats2=s.feats||[];
     if(feats2.length){
-      divLine(nextY); nextY+=GAP;
-      secLbl('ما ستحصل عليه', nextY); nextY+=58;
+      divLine(nextY); nextY+=divGap;
+      secLbl('ما ستحصل عليه', nextY, secFS); nextY+=Math.round(secFS*1.3);
       feats2.slice(0,5).forEach(function(f,i){
-        var ry=nextY+i*84;
-        roundRect(ctx,60,ry,W-120,68,16);
+        var ry=nextY+i*featStep;
+        roundRect(ctx,60,ry,W-120,featH,16);
         ctx.fillStyle='rgba(13,8,40,.6)'; ctx.fill();
         ctx.strokeStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.18)'; ctx.lineWidth=2; ctx.stroke();
-        ctx.font='bold 36px Tajawal,Arial'; ctx.fillStyle='#00e676'; ctx.textAlign='right';
-        ctx.fillText('✓', W-88, ry+16);
-        ctx.fillStyle='#c8b4ff'; ctx.fillText(f, W-132, ry+16);
+        ctx.font='bold '+featFS+'px Tajawal,Arial'; ctx.fillStyle='#00e676'; ctx.textAlign='right';
+        ctx.fillText('✓', W-88, ry+Math.round(featH*.22));
+        ctx.fillStyle='#c8b4ff'; ctx.fillText(f, W-132, ry+Math.round(featH*.22));
       });
-      nextY+=feats2.slice(0,5).length*84+GAP;
     }
 
-    /* ── footer ── */
-    var footY=H-140;
-    divLine(footY-GAP*1.5);
+    /* ── footer: always at fixed position ── */
+    divLine(FOOTER_Y-Math.round(GAP*1.2));
     ctx.font='bold 50px Cinzel,serif'; ctx.fillStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.85)'; ctx.textAlign='center';
-    ctx.fillText('☽ QAMAR', cx, footY);
+    ctx.textBaseline='top'; ctx.fillText('☽ QAMAR', cx, FOOTER_Y+10);
     ctx.font='32px Tajawal,Arial'; ctx.fillStyle='rgba(255,255,255,.28)';
-    ctx.fillText('⚡ تسليم فوري · ضمان كامل', cx, footY+56);
+    ctx.fillText('⚡ تسليم فوري · ضمان كامل', cx, FOOTER_Y+68);
 
     /* ── download ── */
     var safeName=(s.name||'card').replace(/\s+/g,'-');
