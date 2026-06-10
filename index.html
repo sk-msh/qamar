@@ -1690,6 +1690,41 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
     <div class="sp-panel" id="panel-cards">
       <div class="sp-intro">تحكّم بكل تفاصيل الكارد الكوزمي — التغييرات تظهر فوراً.</div>
 
+      <!-- SAVE MODE BLOCK -->
+      <div class="sp-block" style="border:1.5px solid rgba(0,229,255,.2);background:rgba(0,229,255,.03)">
+        <div class="sp-block-title" style="color:var(--cyan)">💾 وضع حفظ البطاقة</div>
+        <div class="sp-intro" style="margin-bottom:10px">اختر ما يحدث عند الضغط على زر الحفظ في الكارد أو المودال.</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;align-items:flex-start;gap:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:11px 13px;cursor:pointer" id="save-mode-lbl-auto">
+            <input type="radio" name="save-mode" value="auto" id="save-mode-auto" onchange="setSaveMode('auto')" style="margin-top:3px;accent-color:var(--cyan)">
+            <div>
+              <div style="font-weight:700;font-size:.84rem;color:var(--txt)">🌌 التصميم التلقائي</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:2px">يُنشئ صورة ستوري 1080×1920 بتصميم الكارد الكوزمي تلقائياً</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:11px 13px;cursor:pointer" id="save-mode-lbl-custom">
+            <input type="radio" name="save-mode" value="custom" id="save-mode-custom" onchange="setSaveMode('custom')" style="margin-top:3px;accent-color:var(--cyan)">
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:.84rem;color:var(--txt)">🖼️ صورة مخصصة</div>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:2px">استخدم صورة جاهزة صممتها مسبقاً — تُحفظ وتُرسل عند الضغط</div>
+              <div id="custom-img-area" style="margin-top:10px;display:none">
+                <div id="custom-img-preview" style="display:none;margin-bottom:8px;text-align:center">
+                  <img id="custom-img-thumb" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid var(--border)" src="">
+                  <div style="font-size:.7rem;color:var(--muted);margin-top:4px" id="custom-img-name"></div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <label class="sbn" style="padding:8px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+                    📁 اختر صورة
+                    <input type="file" accept="image/*" id="custom-img-input" onchange="loadCustomImg(this)" style="display:none">
+                  </label>
+                  <button class="sbd" id="custom-img-clear" onclick="clearCustomImg()" style="padding:8px 14px;display:none">🗑️ حذف</button>
+                </div>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
       <div id="cos-settings">
         <div class="sp-block">
           <div class="sp-block-title">🌌 ألوان الكارد الكوزمي</div>
@@ -2054,6 +2089,7 @@ function applyStateObj(st){
     if(st.DATA&&st.DATA.length) DATA=st.DATA;
     if(st.CL) for(var k in st.CL) CL[k]=st.CL[k];
     loadCats(st);
+    loadSaveMode(st);
     var s=st.settings||{};
     function sv(id,val){ var el=G(id); if(el&&val!==undefined&&val!=='') el.value=val; }
     if(IS_ADMIN){
@@ -2701,6 +2737,28 @@ function hexToRgba(hex, alpha){
 function saveCardImage(id){
   var s=null; for(var i=0;i<DATA.length;i++) if(DATA[i].id===id){ s=DATA[i]; break; }
   if(!s){ toast('⚠️ لم يتم العثور على الخدمة'); return; }
+
+  /* custom image mode */
+  if(SAVE_MODE==='custom'){
+    if(!CUSTOM_IMG_DATA){ toast('⚠️ لم يتم رفع صورة مخصصة بعد — اذهب للإعدادات ← الكاردات'); return; }
+    var safeName2=(s.name||'card').replace(/\s+/g,'-');
+    var isIOS2=/iPad|iPhone|iPod/.test(navigator.userAgent);
+    if(isIOS2&&navigator.share){
+      fetch(CUSTOM_IMG_DATA).then(function(r){ return r.blob(); }).then(function(blob){
+        var file=new File([blob],'qamar-'+safeName2+'.png',{type:'image/png'});
+        if(navigator.canShare&&navigator.canShare({files:[file]})){
+          navigator.share({files:[file],title:s.name}).then(function(){ toast('💾 تم حفظ الصورة'); }).catch(function(){});
+        } else {
+          var w=window.open('','_blank'); if(w){ w.document.write('<img src="'+CUSTOM_IMG_DATA+'" style="max-width:100%">'); w.document.close(); }
+          toast('💾 اضغط مطولاً للحفظ');
+        }
+      });
+    } else {
+      var a2=document.createElement('a'); a2.download='qamar-'+safeName2+'.png'; a2.href=CUSTOM_IMG_DATA; a2.click();
+      toast('💾 تم تنزيل الصورة المخصصة');
+    }
+    return;
+  }
   var acc=cV('cc-accent','#7c5fe6'), ac=h2r(acc), l=getLogo(s), lm=isLightMode();
 
   /* ── Story 1080×1920 ── */
@@ -2949,81 +3007,7 @@ function saveCardImage(id){
 }
 function saveModCard(){
   if(!curSub){ toast('⚠️ لا توجد خدمة مفتوحة'); return; }
-  try{
-    var s=curSub;
-    var acc=cV('cc-accent','#7c5fe6');
-    var ac=h2r(acc);
-    var l=getLogo(s);
-    /* ── Story size 1080×1920 (9:16) ── */
-    var W=1080, H=1920;
-    var cv=document.createElement('canvas'); cv.width=W; cv.height=H;
-    var ctx=cv.getContext('2d');
-    var cx=W/2, cy=H/2;
-
-    /* background */
-    var bg=ctx.createRadialGradient(cx,cy*.6,10,cx,cy*.6,H*.85);
-    bg.addColorStop(0,'rgba('+Math.round(ac.r*.22)+','+Math.round(ac.g*.12)+','+Math.round(ac.b*.32)+',1)');
-    bg.addColorStop(.45,'#0d0828'); bg.addColorStop(1,'#04030e');
-    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-
-    /* border */
-    ctx.strokeStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.5)'; ctx.lineWidth=4;
-    roundRect(ctx,8,8,W-16,H-16,40); ctx.stroke();
-
-    /* nebula glows */
-    var g1=ctx.createRadialGradient(cx*.4,cy*.5,0,cx*.4,cy*.5,W*.7);
-    g1.addColorStop(0,'rgba('+ac.r+','+ac.g+','+ac.b+',.16)'); g1.addColorStop(1,'transparent');
-    ctx.fillStyle=g1; ctx.fillRect(0,0,W,H);
-    var g2=ctx.createRadialGradient(cx*1.6,cy*1.4,0,cx*1.6,cy*1.4,W*.5);
-    g2.addColorStop(0,'rgba('+ac.r+','+ac.g+','+ac.b+',.1)'); g2.addColorStop(1,'transparent');
-    ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
-
-    /* stars */
-    var rng2=(function(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; })(99);
-    for(var i=0;i<120;i++){
-      var sx=rng2()*W, sy=rng2()*H, sr=rng2()*2+.5;
-      ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,'+(rng2()*.6+.1)+')'; ctx.fill();
-    }
-
-    /* orbits */
-    var lcx2=cx, lcy2=H*.30;
-    var orbits=[{rx:200,ry:60,rot:.3},{rx:260,ry:95,rot:1.1},{rx:310,ry:124,rot:2},{rx:355,ry:152,rot:3}];
-    orbits.forEach(function(o,i){
-      ctx.save(); ctx.translate(lcx2,lcy2); ctx.rotate(o.rot);
-      ctx.beginPath(); ctx.ellipse(0,0,o.rx,o.ry,0,0,Math.PI*2);
-      ctx.strokeStyle='rgba('+ac.r+','+ac.g+','+ac.b+','+((.5-i*.07).toFixed(2))+')';
-      ctx.lineWidth=2.5; ctx.stroke(); ctx.restore();
-    });
-    [0,Math.PI].forEach(function(off){
-      var px=lcx2+260*Math.cos(.8+off), py=lcy2+44*Math.sin(.8+off);
-      ctx.beginPath(); ctx.arc(px,py,7,0,Math.PI*2);
-      ctx.fillStyle='rgba('+ac.r+','+ac.g+','+ac.b+',.85)'; ctx.fill();
-    });
-
-    /* logo glow */
-    var lr2=130;
-    var glow=ctx.createRadialGradient(lcx2,lcy2,0,lcx2,lcy2,lr2*1.8);
-    glow.addColorStop(0,'rgba('+ac.r+','+ac.g+','+ac.b+',.6)');
-    glow.addColorStop(.5,'rgba('+ac.r+','+ac.g+','+ac.b+',.2)');
-    glow.addColorStop(1,'transparent');
-    ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(lcx2,lcy2,lr2*2,0,Math.PI*2); ctx.fill();
-
-    /* logo circle */
-    ctx.save();
-    ctx.beginPath(); ctx.arc(lcx2,lcy2,lr2,0,Math.PI*2); ctx.clip();
-    ctx.fillStyle=l.bg||'#1a0a40'; ctx.fillRect(lcx2-lr2,lcy2-lr2,lr2*2,lr2*2);
-    if(l.src){
-      var img=new Image(); img.crossOrigin='anonymous';
-      img.onload=function(){ finishCard(ctx,cv,img,lcx2,lcy2,lr2,s,acc,ac,W,H,l); };
-      img.onerror=function(){ finishCard(ctx,cv,null,lcx2,lcy2,lr2,s,acc,ac,W,H,l); };
-      img.src=l.src; ctx.restore(); return;
-    }
-    ctx.restore();
-    ctx.font='bold 110px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(l.em||'📦',lcx2,lcy2);
-    finishCard(ctx,cv,null,lcx2,lcy2,lr2,s,acc,ac,W,H,l);
-  }catch(e){ toast('⚠️ '+e.message); }
+  saveCardImage(curSub.id);
 }
 
 function roundRect(ctx,x,y,w,h,r){
@@ -3576,6 +3560,7 @@ function spTab(name, el){
   if(name==='backup') updateLSI();
   if(name==='customers') renderCustomerList();
   if(name==='categories') renderCatSettings();
+  if(name==='cards') applySaveModeUI();
 }
 
 /* ════════════════════════
@@ -3895,7 +3880,7 @@ function duplicateSub(id){
 function saveAll(showToast){
   if(!IS_ADMIN) return; /* الزبائن لا يحفظون شيئاً */
   try{
-    var s={DATA:DATA, CL:CL, CATS:CATS, settings:{
+    var s={DATA:DATA, CL:CL, CATS:CATS, saveMode:SAVE_MODE, customImgData:CUSTOM_IMG_DATA, customImgName:CUSTOM_IMG_NAME, settings:{
       siteName:G('sg-name').value, footerDesc:G('sg-desc').value, offerText:G('sg-offer').value,
       badge:G('sh-badge').value, tagline:G('sh-tagline').value, btn1:G('sh-btn1').value, btn2:G('sh-btn2').value, c1:G('sh-c1').value, c3:G('sh-c3').value,
       waPhone:G('sc-wa').value, ctaTitle:G('sc-ctatitle').value, ctaSub:G('sc-ctasub').value,
@@ -4057,6 +4042,79 @@ function initCatDrag(container){
       toast('✅ تم تغيير ترتيب الأقسام');
     });
   });
+}
+
+/* ════════════════════════
+   SAVE MODE (auto vs custom image)
+════════════════════════ */
+var SAVE_MODE = 'auto';     /* 'auto' | 'custom' */
+var CUSTOM_IMG_DATA = null; /* base64 data URL */
+var CUSTOM_IMG_NAME = '';
+
+function setSaveMode(mode){
+  SAVE_MODE = mode;
+  var area = G('custom-img-area');
+  if(area) area.style.display = mode==='custom' ? 'block' : 'none';
+  /* highlight selected */
+  ['auto','custom'].forEach(function(m){
+    var lbl=G('save-mode-lbl-'+m);
+    if(lbl) lbl.style.borderColor = m===mode ? 'var(--cyan)' : 'var(--border)';
+  });
+  saveSaveMode();
+}
+
+function loadCustomImg(input){
+  var file = input.files[0]; if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    CUSTOM_IMG_DATA = e.target.result;
+    CUSTOM_IMG_NAME = file.name;
+    var thumb = G('custom-img-thumb'), prev = G('custom-img-preview'), nm = G('custom-img-name');
+    if(thumb){ thumb.src = CUSTOM_IMG_DATA; }
+    if(prev)  prev.style.display = 'block';
+    if(nm)    nm.textContent = file.name;
+    var clr = G('custom-img-clear'); if(clr) clr.style.display='';
+    saveSaveMode();
+    toast('✅ تم رفع الصورة المخصصة');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearCustomImg(){
+  CUSTOM_IMG_DATA = null; CUSTOM_IMG_NAME = '';
+  var thumb=G('custom-img-thumb'), prev=G('custom-img-preview'), clr=G('custom-img-clear');
+  if(thumb) thumb.src=''; if(prev) prev.style.display='none'; if(clr) clr.style.display='none';
+  var inp=G('custom-img-input'); if(inp) inp.value='';
+  saveSaveMode(); toast('🗑️ تم حذف الصورة المخصصة');
+}
+
+function saveSaveMode(){
+  try{
+    var raw=localStorage.getItem(STORE_KEY); var st=raw?JSON.parse(raw):{};
+    st.saveMode=SAVE_MODE; st.customImgData=CUSTOM_IMG_DATA; st.customImgName=CUSTOM_IMG_NAME;
+    localStorage.setItem(STORE_KEY,JSON.stringify(st));
+    pushToCloud(st);
+  }catch(e){}
+}
+
+function loadSaveMode(st){
+  if(!st) return;
+  if(st.saveMode) SAVE_MODE=st.saveMode;
+  if(st.customImgData) CUSTOM_IMG_DATA=st.customImgData;
+  if(st.customImgName) CUSTOM_IMG_NAME=st.customImgName;
+}
+
+function applySaveModeUI(){
+  if(G('save-mode-auto'))   G('save-mode-auto').checked   = SAVE_MODE==='auto';
+  if(G('save-mode-custom')) G('save-mode-custom').checked = SAVE_MODE==='custom';
+  setSaveMode(SAVE_MODE); /* apply visual highlights and show/hide area */
+  if(CUSTOM_IMG_DATA){
+    var thumb=G('custom-img-thumb'), prev=G('custom-img-preview'), nm=G('custom-img-name'), clr=G('custom-img-clear');
+    if(thumb) thumb.src=CUSTOM_IMG_DATA;
+    if(prev)  prev.style.display='block';
+    if(nm)    nm.textContent=CUSTOM_IMG_NAME||'صورة مخصصة';
+    if(clr)   clr.style.display='';
+  }
 }
 
 function updateLSI(){ try{ var raw=localStorage.getItem(STORE_KEY); G('last-save-info').textContent=raw?'بيانات محفوظة ✅':'لا توجد بيانات محفوظة'; }catch(e){ G('last-save-info').textContent='التخزين غير متاح'; } }
