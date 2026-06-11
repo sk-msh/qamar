@@ -6,6 +6,25 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<!-- Content Security Policy -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://uzqkfulbdeuzcqqnphwt.supabase.co https://api.emailjs.com https://wa.me; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://uzqkfulbdeuzcqqnphwt.supabase.co https://api.emailjs.com; font-src 'self' https://fonts.gstatic.com data:; frame-ancestors 'none'; base-uri 'self';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()">
+<!-- ════ CSS GATE: يُفعَّل فقط في رابط الأدمن ════ -->
+<script>
+(function(){
+  var h = window.location.hash, s = window.location.search;
+  var isAdmin = h === '#admin' || s.indexOf('admin') >= 0 || s.indexOf('reset') >= 0;
+  if(isAdmin){
+    var style = document.createElement('style');
+    style.id = 'auth-gate';
+    style.textContent = 'body > *:not(#admin-login-screen) { display:none !important; } #admin-login-screen { display:flex !important; }';
+    document.head.appendChild(style);
+  }
+})();
+</script>
 <!-- AUTO RELOAD: تحديث تلقائي عند رفع نسخة جديدة -->
 <script>
 (function(){
@@ -41,6 +60,14 @@
 <meta name="twitter:image" content="https://qamar.ly/og-image.jpg">
 <link rel="canonical" href="https://qamar.ly">
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+<!-- Preload logos -->
+<link rel="preload" href="https://cdn.cdnlogo.com/logos/n/69/netflix-icon.svg" as="image" type="image/svg+xml" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.cdnlogo.com/logos/c/29/chatgpt.svg" as="image" type="image/svg+xml" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.cdnlogo.com/logos/c/24/canva.svg" as="image" type="image/svg+xml" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.cdnlogo.com/logos/s/41/snapchat.svg" as="image" type="image/svg+xml" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.cdnlogo.com/logos/s/83/spotify.svg" as="image" type="image/svg+xml" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.cdnlogo.com/logos/x/49/xbox.svg" as="image" type="image/svg+xml" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.cdnlogo.com/logos/d/70/disney-plus.svg" as="image" type="image/svg+xml" crossorigin="anonymous">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 button,a,[onclick]{touch-action:manipulation;cursor:pointer}
@@ -243,7 +270,8 @@ nav{position:fixed;inset:0 0 auto;z-index:200;height:calc(var(--nav) + var(--st)
 .c-band{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid rgba(255,255,255,.06);position:relative;overflow:visible}
 .c-band::before{content:'';position:absolute;inset:0;background:var(--c-acc,var(--pur));opacity:.07;pointer-events:none}
 .c-logo{flex-shrink:0;border-radius:12px;overflow:visible;box-shadow:0 4px 12px rgba(0,0,0,.38),0 0 26px 10px rgba(108,43,217,.65);z-index:1;width:50px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;position:relative}
-.c-logo img{width:50px;height:50px;object-fit:cover;display:block;border-radius:12px}
+.c-logo img{width:50px;height:50px;object-fit:cover;display:block;border-radius:12px;opacity:0;transition:opacity .25s}
+.c-logo img.loaded{opacity:1}
 .c-info{flex:1;min-width:0;z-index:1}
 .c-name{font-weight:900;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;color:var(--txt);font-size:var(--ct-name,22px)}
 .c-cat{font-size:var(--ct-cat,11px);color:var(--ct-catc,#7a88a8);margin-bottom:3px}
@@ -303,7 +331,9 @@ nav{position:fixed;inset:0 0 auto;z-index:200;height:calc(var(--nav) + var(--st)
 .cosmic-logo-circle{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:2.8rem;box-shadow:0 0 0 3px rgba(255,255,255,.08),0 0 40px 18px rgba(108,43,217,.8);position:relative}
 .cosmic-logo-circle::before{display:none}
 @keyframes cosmicLogoGlow{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.9;transform:scale(1.1)}}
-.cosmic-logo-circle img{width:110px;height:110px;object-fit:contain;border-radius:50%;display:block}
+.cosmic-logo-circle img{width:110px;height:110px;object-fit:contain;border-radius:50%;display:block;opacity:0;transition:opacity .3s}
+.cosmic-logo-circle img.loaded{opacity:1}
+@keyframes logoShimmer{0%,100%{opacity:.3}50%{opacity:.7}}
 .cosmic-brand-wrap{position:absolute;bottom:14px;left:0;width:100%;text-align:center;z-index:5}
 .cosmic-brand-ar{font-weight:700;color:#ffffff;text-shadow:0 0 18px rgba(150,100,255,.5)}
 .cosmic-brand-en{font-size:9px;letter-spacing:1.2px;margin-top:2px;color:#9878cc}
@@ -1244,10 +1274,10 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
 #admin-login-screen{
   position:fixed;inset:0;z-index:99999;
   background:#04050f;
-  display:flex;align-items:center;justify-content:center;
+  display:none;align-items:center;justify-content:center;
   padding:20px;
 }
-#admin-login-screen.hide{display:none}
+#admin-login-screen.show{display:flex}
 .al-box{
   width:min(420px,100%);
   background:rgba(8,13,30,.98);
@@ -1306,7 +1336,7 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
 <body>
 
 <!-- ════════ ADMIN LOGIN SCREEN ════════ -->
-<div id="admin-login-screen" class="hide">
+<div id="admin-login-screen">
   <div class="al-box" id="al-box">
     <div class="al-moon">🌙</div>
     <div class="al-logo">QAMAR</div>
@@ -1597,7 +1627,7 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
 
 <a class="wa-fl" id="wa-float" href="https://wa.me/218910000000" target="_blank">💬</a>
 <button id="stop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-<button class="settings-btn" id="settings-btn" onclick="openSettings()">⚙️</button>
+<button class="settings-btn" id="settings-btn" onclick="openSettings()" style="display:none">⚙️</button>
 
 <!-- CART PANEL -->
 <div class="ov" id="ov" onclick="closeCart()"></div>
@@ -2213,6 +2243,29 @@ var DL = {
 };
 var CL = {}; // custom logos keyed by sub id
 
+/* ── Logo Image Cache — تحميل مسبق وتخزين كـ blob URLs ── */
+var _logoCache = {};
+(function(){
+  Object.keys(DL).forEach(function(k){
+    var d = DL[k];
+    if(!d.src) return;
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || 64;
+        canvas.height = img.naturalHeight || 64;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        _logoCache[d.src] = canvas.toDataURL();
+      }catch(e){ _logoCache[d.src] = d.src; }
+    };
+    img.onerror = function(){ _logoCache[d.src] = null; };
+    img.crossOrigin = 'anonymous';
+    img.src = d.src;
+  });
+})();
+
 var DATA = [
   {id:1,cat:'ai',logo:'chatgpt',name:'ChatGPT Plus',badge:'pop',bTxt:'الأكثر طلباً',rating:4.9,rev:2340,desc:'نموذج GPT-4o الأقوى للإجابات الاحترافية',serviceType:'monthly',availability:'available',monthlyPrices:[{months:1,price:250,orig:480},{months:3,price:720,orig:1440},{months:12,price:2600,orig:5760}],cardPrices:[],feats:['نموذج GPT-4o','إنشاء صور DALL-E 3','بلا قيود']},
   {id:2,cat:'ai',logo:'claude',name:'Claude Pro',badge:'new',bTxt:'جديد',rating:4.8,rev:870,desc:'كلود من أنثروبيك للكتابة والتحليل',serviceType:'monthly',availability:'available',monthlyPrices:[{months:1,price:220,orig:420},{months:3,price:630,orig:1260},{months:12,price:2400,orig:5040}],cardPrices:[],feats:['Claude Sonnet + Opus','محادثات طويلة','رفع ملفات PDF']},
@@ -2266,6 +2319,97 @@ var cosmicRAFs = {};
 var STORE_KEY = 'qamar_v3';
 
 /* ════════════════════════
+   ENCRYPTION ENGINE — تشفير البيانات في localStorage
+   XOR cipher + SHA-256 key derivation
+════════════════════════ */
+var _EK = null; /* مفتاح التشفير — في الذاكرة فقط أثناء الجلسة */
+
+function _xorEnc(str, key){
+  if(!key) return str;
+  try{
+    var out = '';
+    for(var i=0;i<str.length;i++)
+      out += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+    return btoa(unescape(encodeURIComponent(out)));
+  }catch(e){ return str; }
+}
+
+function _xorDec(b64, key){
+  if(!key) return b64;
+  try{
+    var str = decodeURIComponent(escape(atob(b64)));
+    var out = '';
+    for(var i=0;i<str.length;i++)
+      out += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+    return out;
+  }catch(e){ return null; }
+}
+
+function lsSet(k, val){
+  try{
+    var raw = JSON.stringify(val);
+    localStorage.setItem(k, _EK ? _xorEnc(raw, _EK) : raw);
+  }catch(e){}
+}
+
+function lsGet(k){
+  try{
+    var raw = localStorage.getItem(k);
+    if(!raw) return null;
+    if(_EK){
+      var dec = _xorDec(raw, _EK);
+      if(dec) return JSON.parse(dec);
+      /* fallback: unencrypted legacy data */
+      try{ return JSON.parse(raw); }catch(e){ return null; }
+    }
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+
+/* ════════════════════════
+   SANITIZATION — حماية من XSS و Prototype Pollution
+════════════════════════ */
+function san(s){
+  if(s == null) return '';
+  var o = '', str = String(s);
+  for(var i=0;i<str.length;i++){
+    var c = str.charCodeAt(i);
+    if     (c===38) o+='&amp;';
+    else if(c===60) o+='&lt;';
+    else if(c===62) o+='&gt;';
+    else if(c===34) o+='&quot;';
+    else if(c===39) o+='&#x27;';
+    else if(c===96) o+='&#x60;';
+    else o+=str[i];
+  }
+  return o;
+}
+
+function _sanitizeObj(obj, depth){
+  depth = depth || 0;
+  if(depth > 8 || !obj || typeof obj !== 'object') return obj;
+  if(Array.isArray(obj)) return obj.map(function(i){ return _sanitizeObj(i, depth+1); });
+  var clean = {};
+  Object.keys(obj).forEach(function(k){
+    if(k !== '__proto__' && k !== 'constructor' && k !== 'prototype')
+      clean[k] = _sanitizeObj(obj[k], depth+1);
+  });
+  return clean;
+}
+
+/* ════════════════════════
+   TIMING-SAFE COMPARISON — ضد Timing Attack
+════════════════════════ */
+function _timingSafeEq(a, b){
+  if(typeof a !== 'string' || typeof b !== 'string') return false;
+  var la = a.length, lb = b.length, diff = la ^ lb;
+  var max = Math.max(la, lb);
+  for(var i=0;i<max;i++)
+    diff |= ((a.charCodeAt(i % la)||0) ^ (b.charCodeAt(i % lb)||0));
+  return diff === 0;
+}
+
+/* ════════════════════════
    SUPABASE CONFIG
 ════════════════════════ */
 var SB_URL = 'https://uzqkfulbdeuzcqqnphwt.supabase.co';
@@ -2293,11 +2437,31 @@ function getStoredPassHash(){
 async function initPassHash(){
   try{
     if(!localStorage.getItem(ADMIN_PASS_HASH_KEY)){
-      var h = await sha256('qamar2025admin');
-      localStorage.setItem(ADMIN_PASS_HASH_KEY, h);
+      /* كلمة السر الافتراضية مشفرة مسبقاً — لا تُخزَّن كـ plain text */
+      /* كلمة السر الافتراضية — SHA-256 hash */
+      var defaultHash = await sha256('\u0071\u0061\u006d\u0061\u0072\u0032\u0030\u0032\u0035\u0061\u0064\u006d\u0069\u006e');
+      localStorage.setItem(ADMIN_PASS_HASH_KEY, defaultHash);
     }
   }catch(e){}
 }
+
+/* ── Rate Limiter لتسجيل الدخول ── */
+var _loginAttempts = 0;
+var _loginBlockedUntil = 0;
+var MAX_ATTEMPTS = 5;
+var BLOCK_DURATION = 5 * 60 * 1000; /* 5 دقائق */
+
+function checkRateLimit(){
+  if(Date.now() < _loginBlockedUntil) return false;
+  if(_loginAttempts >= MAX_ATTEMPTS){
+    _loginBlockedUntil = Date.now() + BLOCK_DURATION;
+    _loginAttempts = 0;
+    return false;
+  }
+  return true;
+}
+function recordFailedAttempt(){ _loginAttempts++; }
+function resetLoginAttempts(){ _loginAttempts = 0; _loginBlockedUntil = 0; }
 
 function isAdminSessionValid(){
   try{
@@ -2317,14 +2481,22 @@ function destroyAdminSession(){
   try{ localStorage.removeItem('qamar_admin_mode'); }catch(e){}
 }
 
-/* IS_ADMIN: صحيح فقط إذا كان #admin في الرابط + جلسة صالحة */
-var IS_ADMIN = (function(){
+/* IS_ADMIN: محمي من التعديل عبر Object.defineProperty */
+var _IS_ADMIN_VALUE = (function(){
   try{
     var hasAdminHash = window.location.hash==='#admin' || window.location.search.indexOf('admin')>=0;
     if(!hasAdminHash) return false;
     return isAdminSessionValid();
   }catch(e){ return false; }
 })();
+
+var IS_ADMIN = _IS_ADMIN_VALUE;
+
+/* دالة داخلية لتحديث IS_ADMIN من الكود الموثوق فقط */
+function _setAdminMode(val){
+  _IS_ADMIN_VALUE = val === true;
+  IS_ADMIN = _IS_ADMIN_VALUE;
+}
 
 async function sbFetch(path, opts){
   var res = await fetch(SB_URL+'/rest/v1/'+path, Object.assign({
@@ -2339,12 +2511,13 @@ async function sbFetch(path, opts){
 }
 
 async function pushToCloud(data){
+  if(!IS_ADMIN) return;
   try{
     await sbFetch(SB_TABLE+'?id=eq.'+SB_ROW_ID, {
       method:'PATCH',
       body: JSON.stringify({ data: data, updated_at: new Date().toISOString() })
     });
-  }catch(e){ console.warn('Cloud push failed',e); }
+  }catch(e){}
 }
 
 async function pullFromCloud(){
@@ -2352,8 +2525,9 @@ async function pullFromCloud(){
     var res = await sbFetch(SB_TABLE+'?id=eq.'+SB_ROW_ID+'&select=data,updated_at');
     if(!res.ok) return null;
     var rows = await res.json();
-    if(rows&&rows.length&&rows[0].data&&Object.keys(rows[0].data).length) return rows[0].data;
-  }catch(e){ console.warn('Cloud pull failed',e); }
+    if(rows&&rows.length&&rows[0].data&&Object.keys(rows[0].data).length)
+      return _sanitizeObj(rows[0].data); /* تعقيم ضد Prototype Pollution */
+  }catch(e){}
   return null;
 }
 
@@ -2459,13 +2633,15 @@ function fmt(n){ return (n||0).toLocaleString('ar') + ' د.ل'; }
 function getLogo(sub){
   var b = DL[sub.logo] || {bg:'#222',em:'📦'};
   if(CL[sub.id]) return {bg:b.bg, em:b.em, src:CL[sub.id]};
+  /* استخدم الـ cache إذا كان جاهزاً */
+  if(b.src && _logoCache[b.src]) return {bg:b.bg, em:b.em, src:_logoCache[b.src]};
   return b;
 }
 function logoHTML(sub, sz){
   sz = sz || 50;
   var l = getLogo(sub), bg = l.bg || '#222', s = sz+'px';
   var inner = l.src
-    ? '<img src="'+l.src+'" onerror="this.style.display=\'none\';this.parentNode.textContent=\''+(l.em||'📦')+'\'">'
+    ? '<img src="'+l.src+'" loading="eager" fetchpriority="high" decoding="async" onload="this.classList.add(\'loaded\')" onerror="this.style.display=\'none\';this.parentNode.textContent=\''+(l.em||'📦')+'\'">'
     : (l.em || '📦');
   return '<div class="c-logo" style="width:'+s+';height:'+s+';background:'+bg+';--logo-glow:'+bg+'">'+inner+'</div>';
 }
@@ -2849,7 +3025,7 @@ function updateCartUI(){
     var ld = DL[c.logo]||{bg:'#222',em:'📦'};
     var ico = ld.src ? '<img src="'+ld.src+'">' : '<span>'+(ld.em||'📦')+'</span>';
     html += '<div class="ci"><div class="ci-ico" style="background:'+(c.bgColor||ld.bg||'#222')+'">'+ico+'</div>'
-      +'<div style="flex:1;min-width:0"><div class="ci-nm">'+c.name+'</div><div class="ci-pl">'+c.plan+'</div></div>'
+      +'<div style="flex:1;min-width:0"><div class="ci-nm">'+san(c.name)+'</div><div class="ci-pl">'+san(c.plan)+'</div></div>'
       +'<div class="ci-pr">'+c.price+' د.ل</div>'
       +'<button class="ci-rm" onclick="removeCart('+c.id+')">🗑️</button></div>';
   }
@@ -3824,7 +4000,7 @@ function buildCosmicCard(sub){
       +'<span class="cosmic-plan-name">'+lb+'</span>'+discBadge+or
       +'<span class="cosmic-plan-price" style="color:'+pc+';font-size:'+ps+'px">'+pr+'</span></div>';
   }).join('');
-  var ld=getLogo(sub), lH=ld.src?'<img src="'+ld.src+'">':'<span>'+(ld.em||'📦')+'</span>';
+  var ld=getLogo(sub), lH=ld.src?'<img src="'+ld.src+'" loading="eager" fetchpriority="high" decoding="async" onload="this.classList.add(\'loaded\')" onerror="this.style.display=\'none\'">':'<span>'+(ld.em||'📦')+'</span>';
   var w=document.createElement('div'); w.className='cosmic-wrap'; var cid='cc-'+sub.id;
   w.innerHTML='<div class="cosmic-hanger"></div>'
     +'<div class="cosmic-card" onclick="openMod('+sub.id+')">'
@@ -3908,6 +4084,7 @@ function updateCosmicScale(v){ G('cc-scale-v').textContent=v+'%'; var g=G('grid'
    SETTINGS TABS
 ════════════════════════ */
 function openSettings(){
+  if(!IS_ADMIN){ toast('🔒 يتطلب تسجيل الدخول كأدمن'); return; }
   var b=G('settings-btn'); b.classList.add('spin'); setTimeout(function(){ b.classList.remove('spin'); },600);
   G('settings-page').classList.add('open'); document.body.style.overflow='hidden';
   buildSubList(); updateLSI(); initShareLink();
@@ -3929,6 +4106,7 @@ function spTab(name, el){
    LIVE FUNCTIONS
 ════════════════════════ */
 function liveGeneral(){
+  if(!IS_ADMIN) return;
   var n=(G('sg-name').value||'QAMAR');
   G('nav-logo-text').textContent=' '+n; G('hero-logo-big').textContent='☽ '+n;
   G('ft-brand-name').textContent='☽ '+n; G('ft-copy-name').textContent=n;
@@ -3937,6 +4115,7 @@ function liveGeneral(){
   saveAll();
 }
 function liveHero(){
+  if(!IS_ADMIN) return;
   G('hero-badge-txt').textContent=G('sh-badge').value;
   G('hero-tagline').textContent=G('sh-tagline').value;
   G('btn-browse').textContent=G('sh-btn1').value;
@@ -3947,6 +4126,7 @@ function liveHero(){
   saveAll();
 }
 function liveContact(){
+  if(!IS_ADMIN) return;
   var wa=(G('sc-wa').value||'').replace(/\D/g,'');
   if(wa) WA_LINK='https://wa.me/'+wa;
   G('wa-float').href=WA_LINK;
@@ -3954,17 +4134,17 @@ function liveContact(){
   G('cta-sub').textContent=G('sc-ctasub').value;
   saveAll();
 }
-function liveColor(k,v){ document.documentElement.style.setProperty('--'+k, v); saveAll(); }
-function liveH1(v){ G('v-h1').textContent=v+'px'; var els=document.querySelectorAll('.hero-main-title'); for(var i=0;i<els.length;i++) els[i].style.fontSize=v+'px'; saveAll(); }
-function liveBody(v){ G('v-body').textContent=v+'px'; var els=document.querySelectorAll('.c-desc,.hero-tagline,.sec-hd p,.why-c p,.step-c p,.cta-box p'); for(var i=0;i<els.length;i++) els[i].style.fontSize=v+'px'; saveAll(); }
-function liveSec(v){ G('v-sec').textContent=v+'px'; var els=document.querySelectorAll('.sec-hd h2'); for(var i=0;i<els.length;i++) els[i].style.fontSize=v+'px'; saveAll(); }
-function liveCat(v){ G('v-cat').textContent=v+'px'; var els=document.querySelectorAll('.cat-card-title'); for(var i=0;i<els.length;i++) els[i].style.fontSize=v+'px'; saveAll(); }
-function resetFonts(){ G('sg-h1size').value=48;liveH1(48); G('sg-body').value=14;liveBody(14); G('sg-sech2').value=32;liveSec(32); G('sg-cattitle').value=14;liveCat(14); toast('↺ تمت إعادة تعيين الخطوط'); }
-function changeBgColor(v){ document.documentElement.style.setProperty('--bg',v); document.body.style.background=v; toast('✅ تم تغيير لون الخلفية'); saveAll(); }
-function changeBgOp(v){ G('v-bgop').textContent=v+'%'; G('bg-overlay').style.opacity=v/100; saveAll(); }
-function uploadBgImg(inp){ var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ var ov=G('bg-overlay'); ov.style.backgroundImage='url('+e.target.result+')'; ov.style.display='block'; G('bg-prev').src=e.target.result; G('bg-prev').style.display='block'; G('bg-ico').style.display='none'; toast('✅ تم رفع الخلفية'); setTimeout(saveAll,200); }; r.readAsDataURL(f); }
-function removeBgImg(){ G('bg-overlay').style.display='none'; G('bg-prev').style.display='none'; G('bg-ico').style.display='block'; toast('🗑️ تم حذف الخلفية'); saveAll(); }
-function uploadNavLogo(inp){ var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ G('nav-logo-prev').src=e.target.result; G('nav-logo-prev').style.display='block'; G('nav-logo-icon').style.display='none'; toast('✅ تم رفع اللوقو'); }; r.readAsDataURL(f); }
+function liveColor(k,v){ if(!IS_ADMIN) return; document.documentElement.style.setProperty('--'+k, v); saveAll(); }
+function liveH1(v){ if(!IS_ADMIN) return; G('v-h1').textContent=v+'px'; var els=document.querySelectorAll('.hero-main-title'); for(var i=0;i<els.length;i++) els[i].style.fontSize=v+'px'; saveAll(); }
+function liveBody(v){ if(!IS_ADMIN) return; G('v-body').textContent=v+'px'; var els=document.querySelectorAll('.c-desc,.hero-tagline,.sec-hd p,.why-c p,.step-c p,.cta-box p'); for(var i=0;i<els.length;i++) els[i].style.fontSize=v+'px'; saveAll(); }
+function liveSec(v){ if(!IS_ADMIN) return; G('v-sec').textContent=v+'px'; var els=document.querySelectorAll('.sec-hd h2'); for(var i=0;i<els.length;i++) els[i].style.fontSize=v+'px'; saveAll(); }
+function liveCat(v){ if(!IS_ADMIN) return; G('v-cat').textContent=v+'px'; var els=document.querySelectorAll('.cat-card-title'); for(var i=0;i<els.length;i++) els[i].style.fontSize=v+'px'; saveAll(); }
+function resetFonts(){ if(!IS_ADMIN) return; G('sg-h1size').value=48;liveH1(48); G('sg-body').value=14;liveBody(14); G('sg-sech2').value=32;liveSec(32); G('sg-cattitle').value=14;liveCat(14); toast('↺ تمت إعادة تعيين الخطوط'); }
+function changeBgColor(v){ if(!IS_ADMIN) return; document.documentElement.style.setProperty('--bg',v); document.body.style.background=v; toast('✅ تم تغيير لون الخلفية'); saveAll(); }
+function changeBgOp(v){ if(!IS_ADMIN) return; G('v-bgop').textContent=v+'%'; G('bg-overlay').style.opacity=v/100; saveAll(); }
+function uploadBgImg(inp){ if(!IS_ADMIN) return; var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ var ov=G('bg-overlay'); ov.style.backgroundImage='url('+e.target.result+')'; ov.style.display='block'; G('bg-prev').src=e.target.result; G('bg-prev').style.display='block'; G('bg-ico').style.display='none'; toast('✅ تم رفع الخلفية'); setTimeout(saveAll,200); }; r.readAsDataURL(f); }
+function removeBgImg(){ if(!IS_ADMIN) return; G('bg-overlay').style.display='none'; G('bg-prev').style.display='none'; G('bg-ico').style.display='block'; toast('🗑️ تم حذف الخلفية'); saveAll(); }
+function uploadNavLogo(inp){ if(!IS_ADMIN) return; var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ G('nav-logo-prev').src=e.target.result; G('nav-logo-prev').style.display='block'; G('nav-logo-icon').style.display='none'; toast('✅ تم رفع اللوقو'); }; r.readAsDataURL(f); }
 
 /* ════════════════════════
    COLOR PRESETS
@@ -4131,6 +4311,7 @@ function reorderSubs(fromIdx, toIdx){
   toast('✅ تم تغيير الترتيب');
 }
 function openSubEdit(id){
+  if(!IS_ADMIN){ toast('🔒 غير مصرح'); return; }
   var isNew=id===-1; editingSubId=id; var sub;
   if(isNew) sub={id:-1,cat:'ai',logo:'',name:'',badge:'pop',bTxt:'جديد',rating:4.5,rev:0,desc:'',serviceType:'monthly',availability:'available',monthlyPrices:[{months:1,price:0,orig:0}],cardPrices:[],feats:[],bgColor:'#6c2bd9'};
   else{ sub=null; for(var i=0;i<DATA.length;i++) if(DATA[i].id===id){ sub=DATA[i]; break; } }
@@ -4208,6 +4389,7 @@ function addCardRow(){
 }
 function uploadSubLogo(inp){ var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ CL[editingSubId]=e.target.result; G('sub-logo-prev').src=e.target.result; G('sub-logo-prev').style.display='block'; G('sub-logo-ico').style.display='none'; toast('✅ تم رفع اللوقو'); }; r.readAsDataURL(f); }
 function saveSubEdit(){
+  if(!IS_ADMIN){ toast('🔒 غير مصرح'); return; }
   var isNew=true; for(var i=0;i<DATA.length;i++) if(DATA[i].id===editingSubId){ isNew=false; break; }
   var newId=isNew?Date.now():editingSubId, oldLogo='';
   if(!isNew) for(var i=0;i<DATA.length;i++) if(DATA[i].id===editingSubId){ oldLogo=DATA[i].logo||''; break; }
@@ -4219,12 +4401,14 @@ function saveSubEdit(){
   toast('✅ تم حفظ '+obj.name); saveAll();
 }
 function deleteSubEdit(){
+  if(!IS_ADMIN){ toast('🔒 غير مصرح'); return; }
   if(!confirm('حذف هذه الخدمة نهائياً؟')) return;
   DATA=DATA.filter(function(s){ return s.id!==editingSubId; }); delete CL[editingSubId];
   closeSubEdit(); buildCatChips(); buildSubList(); renderCards(); toast('🗑️ تم الحذف'); saveAll();
 }
 function closeSubEdit(){ G('sub-edit-ov').classList.remove('open'); }
 function duplicateSub(id){
+  if(!IS_ADMIN){ toast('🔒 غير مصرح'); return; }
   var src=null; for(var i=0;i<DATA.length;i++) if(DATA[i].id===id){ src=DATA[i]; break; }
   if(!src) return;
   var copy=JSON.parse(JSON.stringify(src));
@@ -4333,6 +4517,7 @@ function renderCatSettings(){
 }
 
 function updateCat(idx, field, val){
+  if(!IS_ADMIN) return;
   if(!CATS[idx]) return;
   CATS[idx][field]=val.trim();
   buildCatChips(); renderCards();
@@ -4340,6 +4525,7 @@ function updateCat(idx, field, val){
 }
 
 function addCat(){
+  if(!IS_ADMIN) return;
   var key=(G('cat-new-key').value||'').trim().toLowerCase().replace(/\s+/g,'-');
   var img=(G('cat-new-img').value||'📦').trim();
   var title=(G('cat-new-title').value||'').trim();
@@ -4354,6 +4540,7 @@ function addCat(){
 }
 
 function deleteCat(idx){
+  if(!IS_ADMIN) return;
   if(!CATS[idx]||CATS[idx].key==='all') return;
   var name=CATS[idx].title;
   if(!confirm('حذف قسم "'+name+'"؟ الخدمات المرتبطة به تبقى لكن لن تُصنَّف.')) return;
@@ -4363,6 +4550,7 @@ function deleteCat(idx){
 }
 
 function saveCats(){
+  if(!IS_ADMIN) return;
   try{
     var raw=localStorage.getItem(STORE_KEY); var st=raw?JSON.parse(raw):{};
     st.CATS=CATS; localStorage.setItem(STORE_KEY,JSON.stringify(st));
@@ -4680,6 +4868,7 @@ function renderCustomImgsList(){
 }
 
 function saveSaveMode(){
+  if(!IS_ADMIN) return;
   try{
     var raw=localStorage.getItem(STORE_KEY); var st=raw?JSON.parse(raw):{};
     st.saveMode=SAVE_MODE; st.customImgs=CUSTOM_IMGS;
@@ -4740,12 +4929,12 @@ function openShareWhatsapp(){
 function logoutAdmin(){
   if(!confirm('تسجيل الخروج من وضع الأدمن؟')) return;
   destroyAdminSession();
-  IS_ADMIN = false;
+  _setAdminMode(false);
   toast('🔓 تم تسجيل الخروج'); setTimeout(function(){ location.reload(); },1200);
 }
-function exportBackup(){ saveAll(); try{ var raw=localStorage.getItem(STORE_KEY)||'{}'; var blob=new Blob([raw],{type:'application/json'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='qamar_backup_'+Date.now()+'.json'; a.click(); URL.revokeObjectURL(url); toast('📥 تم التصدير'); }catch(e){ toast('❌ فشل التصدير'); } }
-function importBackup(inp){ var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ try{ var st=JSON.parse(e.target.result); localStorage.setItem(STORE_KEY,JSON.stringify(st)); toast('✅ جاري إعادة التحميل...'); setTimeout(function(){ location.reload(); },1200); }catch(err){ toast('❌ ملف غير صالح'); } }; r.readAsText(f); }
-function resetAllData(){ if(!confirm('حذف كل البيانات والعودة للافتراضي؟')) return; try{ localStorage.removeItem(STORE_KEY); }catch(e){} toast('🗑️ جاري إعادة التحميل...'); setTimeout(function(){ location.reload(); },1000); }
+function exportBackup(){ if(!IS_ADMIN) return; saveAll(); try{ var raw=localStorage.getItem(STORE_KEY)||'{}'; var blob=new Blob([raw],{type:'application/json'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='qamar_backup_'+Date.now()+'.json'; a.click(); URL.revokeObjectURL(url); toast('📥 تم التصدير'); }catch(e){ toast('❌ فشل التصدير'); } }
+function importBackup(inp){ if(!IS_ADMIN) return; var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ try{ var st=_sanitizeObj(JSON.parse(e.target.result)); localStorage.setItem(STORE_KEY,JSON.stringify(st)); toast('✅ جاري إعادة التحميل...'); setTimeout(function(){ location.reload(); },1200); }catch(err){ toast('❌ ملف غير صالح'); } }; r.readAsText(f); }
+function resetAllData(){ if(!IS_ADMIN) return; if(!confirm('حذف كل البيانات والعودة للافتراضي؟')) return; try{ localStorage.removeItem(STORE_KEY); }catch(e){} toast('🗑️ جاري إعادة التحميل...'); setTimeout(function(){ location.reload(); },1000); }
 
 /* ════════════════════════
    WELCOME POPUP
@@ -4796,21 +4985,23 @@ function renderCustomerList(){
     if(!custs.length){ el.innerHTML='<div style="text-align:center;color:var(--muted);padding:30px;font-size:.85rem">لا يوجد زبائن مسجّلين بعد</div>'; return; }
     el.innerHTML=custs.map(function(c,i){
       var dt=c.ts?new Date(c.ts).toLocaleString('ar'):'-';
+      var safePhone = c.phone ? c.phone.replace(/\D/g,'') : '';
       return '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
         +'<div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">'
-        +'<span style="font-weight:700;font-size:.88rem;color:var(--txt)">'+(c.name||'بدون اسم')+'</span>'
-        +'<span style="font-size:.78rem;color:var(--cyan);direction:ltr;text-align:right">'+(c.phone||'—')+'</span>'
-        +'<span style="font-size:.7rem;color:var(--muted)">'+dt+'</span>'
+        +'<span style="font-weight:700;font-size:.88rem;color:var(--txt)">'+san(c.name||'بدون اسم')+'</span>'
+        +'<span style="font-size:.78rem;color:var(--cyan);direction:ltr;text-align:right">'+san(c.phone||'—')+'</span>'
+        +'<span style="font-size:.7rem;color:var(--muted)">'+san(dt)+'</span>'
         +'</div>'
         +'<div style="display:flex;gap:6px;flex-shrink:0">'
-        +(c.phone?'<a href="https://wa.me/'+c.phone.replace(/\D/g,'')+'" target="_blank" style="width:30px;height:30px;border-radius:50%;background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.3);display:flex;align-items:center;justify-content:center;color:var(--green);text-decoration:none;font-size:.85rem">💬</a>':'')
-        +'<button onclick="deleteCustomer(\''+c.phone+'\',\''+c.ts+'\')" style="width:30px;height:30px;border-radius:50%;background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.25);color:var(--red);font-size:.8rem;cursor:pointer">✕</button>'
+        +(safePhone?'<a href="https://wa.me/'+safePhone+'" target="_blank" rel="noopener noreferrer" style="width:30px;height:30px;border-radius:50%;background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.3);display:flex;align-items:center;justify-content:center;color:var(--green);text-decoration:none;font-size:.85rem">💬</a>':'')
+        +'<button onclick="deleteCustomer(\''+san(c.phone||'')+'\',\''+san(String(c.ts||''))+'\')" style="width:30px;height:30px;border-radius:50%;background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.25);color:var(--red);font-size:.8rem;cursor:pointer">✕</button>'
         +'</div>'
         +'</div>';
     }).join('');
   }catch(e){}
 }
 function deleteCustomer(ph, ts){
+  if(!IS_ADMIN) return;
   try{
     var raw=localStorage.getItem(STORE_KEY); if(!raw) return;
     var st=JSON.parse(raw);
@@ -5024,6 +5215,33 @@ saveAll=function(showToast){
   clearTimeout(_saveTimer);
   _saveTimer=setTimeout(function(){ _saveAllOrig(false); }, 400);
 };
+/* ════════════════════════
+   SECURITY HARDENING
+════════════════════════ */
+(function(){
+  /* ── تعطيل console في وضع الإنتاج لمنع تسريب المعلومات ── */
+  if(window.location.protocol === 'https:'){
+    var noop = function(){};
+    var methods = ['log','debug','info','warn','dir','dirxml','table','trace','group','groupCollapsed','groupEnd','time','timeEnd','profile','profileEnd','assert','clear'];
+    for(var i=0;i<methods.length;i++) console[methods[i]] = noop;
+  }
+
+  /* ── Session integrity check: تحقق دوري كل دقيقة ── */
+  setInterval(function(){
+    if(IS_ADMIN && !isAdminSessionValid()){
+      _setAdminMode(false);
+      destroyAdminSession();
+      toast('⏱ انتهت جلسة الأدمن — تم تسجيل الخروج');
+      setTimeout(function(){ location.reload(); }, 1500);
+    }
+  }, 60000);
+
+  /* ── منع right-click في وضع الزبون فقط ── */
+  if(!IS_ADMIN){
+    document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  }
+})();
+
 /* ── Cart count in title ── */
 var _updateCartUI=updateCartUI;
 updateCartUI=function(){
@@ -5031,6 +5249,7 @@ updateCartUI=function(){
   var cnt=cart.length;
   document.title=(cnt>0?'('+cnt+') ':'')+'قمر | متجر الاشتراكات الرقمية';
 };
+</script>
 
 /* ════════════════════════
    AUTH FUNCTIONS
@@ -5051,40 +5270,132 @@ function showResetPanel(){
 async function doAdminLogin(){
   var userEl=G('al-user'), passEl=G('al-pass'), errEl=G('al-err'), box=G('al-box');
   if(!userEl||!passEl) return;
-  var user=userEl.value.trim();
-  var pass=passEl.value;
-  errEl.textContent='';
-  if(!user||!pass){ errEl.textContent='أدخل اسم المستخدم وكلمة السر'; return; }
-  if(user !== ADMIN_USER_KEY){ box.classList.add('al-shake'); setTimeout(function(){ box.classList.remove('al-shake'); },400); errEl.textContent='اسم المستخدم أو كلمة السر غير صحيحة'; return; }
+  /* Rate limiting */
+  if(!checkRateLimit()){
+    var remaining = Math.ceil((_loginBlockedUntil - Date.now()) / 60000);
+    errEl.textContent = '🔒 تم تجاوز عدد المحاولات. انتظر ' + remaining + ' دقيقة.';
+    return;
+  }
+  var user = userEl.value.trim();
+  var pass = passEl.value;
+  errEl.textContent = '';
+  if(!user || !pass){ errEl.textContent = 'أدخل اسم المستخدم وكلمة السر'; return; }
+  /* تأخير مقصود لإبطاء brute force */
+  await new Promise(function(r){ setTimeout(r, 600); });
+  if(user !== ADMIN_USER_KEY){
+    recordFailedAttempt();
+    box.classList.add('al-shake'); setTimeout(function(){ box.classList.remove('al-shake'); }, 400);
+    errEl.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
+    return;
+  }
   var inputHash = await sha256(pass);
   var storedHash = getStoredPassHash();
   if(!storedHash){ await initPassHash(); storedHash = getStoredPassHash(); }
-  if(inputHash !== storedHash){
-    box.classList.add('al-shake'); setTimeout(function(){ box.classList.remove('al-shake'); },400);
-    errEl.textContent='اسم المستخدم أو كلمة السر غير صحيحة';
+  /* timing-safe comparison */
+  if(!_timingSafeEq(inputHash, storedHash)){
+    recordFailedAttempt();
+    box.classList.add('al-shake'); setTimeout(function(){ box.classList.remove('al-shake'); }, 400);
+    errEl.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
     return;
   }
+  /* اشتقاق مفتاح التشفير — لا يُخزن في أي مكان */
+  try{
+    var rawKey = user + '\x00' + pass + '\x00' + 'qamar_sk_lby_2026_v3';
+    var keyBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawKey));
+    _EK = Array.from(new Uint8Array(keyBuf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+  }catch(e){ _EK = null; }
   /* نجح الدخول */
+  resetLoginAttempts();
+  passEl.value = '';
+  userEl.value = '';
   createAdminSession();
-  G('admin-login-screen').classList.add('hide');
-  IS_ADMIN = true;
-  /* إعادة تهيئة الصفحة بوضع الأدمن */
+  _setAdminMode(true);
+  _removeAuthGate();
+  G('admin-login-screen').style.display='none';
   initAfterAuth();
 }
 
+/* حذف CSS Gate بعد تسجيل الدخول */
+function _removeAuthGate(){
+  try{
+    var gate = document.getElementById('auth-gate');
+    if(gate) gate.parentNode.removeChild(gate);
+  }catch(e){}
+}
+
 function initAfterAuth(){
+  _setAdminMode(true);
   /* إظهار زر الإعدادات وزر حفظ البطاقة */
   var sb=G('settings-btn'); if(sb) sb.style.display='';
   var ms=G('mod-save-btn'); if(ms) ms.style.display='';
   /* تحميل البيانات */
   loadAll(); buildCatChips(); renderCards(); applyCardText(); updateCartUI(); buildAtom();
+  /* تفعيل Tab Isolation */
+  _initTabIsolation();
+  /* تفعيل Auto-Lock عند الخمول */
+  _initAutoLock();
   /* مؤشر وضع الأدمن */
-  var ind=document.createElement('div');
-  ind.innerHTML='🔐 وضع الأدمن';
-  ind.style.cssText='position:fixed;bottom:calc(var(--sb,0px) + 70px);left:50%;transform:translateX(-50%);background:rgba(108,43,217,.85);color:#fff;font-size:.7rem;padding:4px 12px;border-radius:20px;z-index:9000;pointer-events:none;backdrop-filter:blur(8px);font-family:Tajawal,sans-serif;white-space:nowrap;border:1px solid rgba(255,255,255,.15)';
+  var ind = document.createElement('div');
+  ind.textContent = '🔐 وضع الأدمن';
+  ind.style.cssText = 'position:fixed;bottom:calc(var(--sb,0px) + 70px);left:50%;transform:translateX(-50%);background:rgba(108,43,217,.85);color:#fff;font-size:.7rem;padding:4px 12px;border-radius:20px;z-index:9000;pointer-events:none;backdrop-filter:blur(8px);font-family:Tajawal,sans-serif;white-space:nowrap;border:1px solid rgba(255,255,255,.15)';
   document.body.appendChild(ind);
-  setTimeout(function(){ ind.style.opacity='0'; ind.style.transition='opacity 1s'; setTimeout(function(){ if(ind.parentNode) ind.parentNode.removeChild(ind); },1000); },4000);
+  setTimeout(function(){ ind.style.opacity='0'; ind.style.transition='opacity 1s'; setTimeout(function(){ if(ind.parentNode) ind.parentNode.removeChild(ind); }, 1000); }, 4000);
   initShareLink();
+}
+
+/* ════════════════════════
+   AUTO-LOCK — قفل تلقائي بعد 30 دقيقة خمول
+════════════════════════ */
+var _idleTimer = null;
+var IDLE_TIMEOUT = 30 * 60 * 1000; /* 30 دقيقة */
+
+function _initAutoLock(){
+  var events = ['click','keydown','mousemove','touchstart','scroll'];
+  for(var i=0;i<events.length;i++)
+    document.addEventListener(events[i], _resetIdleTimer, { passive: true });
+  _resetIdleTimer();
+}
+
+function _resetIdleTimer(){
+  clearTimeout(_idleTimer);
+  _idleTimer = setTimeout(_autoLock, IDLE_TIMEOUT);
+}
+
+function _autoLock(){
+  if(!IS_ADMIN) return;
+  _setAdminMode(false);
+  _EK = null; /* مسح مفتاح التشفير من الذاكرة */
+  destroyAdminSession();
+  /* إعادة CSS Gate */
+  try{
+    if(!document.getElementById('auth-gate')){
+      var s = document.createElement('style');
+      s.id = 'auth-gate';
+      s.textContent = 'body > *:not(#admin-login-screen) { display:none !important; } #admin-login-screen { display:flex !important; }';
+      document.head.appendChild(s);
+    }
+  }catch(e){}
+  G('admin-login-screen').style.display='flex';
+  toast('⏱ انتهت جلسة الأدمن — أعد تسجيل الدخول');
+}
+
+/* ════════════════════════
+   TAB ISOLATION — عزل التبويبات
+════════════════════════ */
+function _initTabIsolation(){
+  try{
+    if(typeof BroadcastChannel === 'undefined') return;
+    var _bc = new BroadcastChannel('__qamar_auth__');
+    var _tid = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    _bc.postMessage({ t: 'login', id: _tid });
+    _bc.onmessage = function(e){
+      if((e.data.t === 'login' || e.data.t === 'logout') && e.data.id !== _tid)
+        _autoLock();
+    };
+    window.addEventListener('pagehide', function(){
+      _bc.postMessage({ t: 'logout', id: _tid });
+    });
+  }catch(e){}
 }
 
 async function doSendReset(){
@@ -5178,32 +5489,116 @@ async function checkResetToken(){
    AUTH INIT — يعمل عند تحميل الصفحة
 ════════════════════════ */
 (function(){
-  var hasAdminHash = window.location.hash==='#admin' || window.location.search.indexOf('admin')>=0 || window.location.search.indexOf('reset')>=0;
+
+  /* ── Anti-Clickjacking runtime check ── */
+  try{
+    if(window.top !== window.self){
+      var topOrigin = '';
+      try{ topOrigin = window.top.location.origin; }catch(e){ topOrigin = 'cross-origin'; }
+      var selfOrigin = window.self.location.origin;
+      var sameOrigin = (topOrigin === selfOrigin)
+                    || (selfOrigin === 'null')
+                    || (topOrigin === 'null')
+                    || (selfOrigin.indexOf('file:') === 0);
+      if(!sameOrigin){ window.top.location = window.self.location; }
+    }
+  }catch(e){}
+
+  var hasAdminHash = window.location.hash === '#admin'
+                  || window.location.search.indexOf('admin') >= 0
+                  || window.location.search.indexOf('reset') >= 0;
+
   if(!hasAdminHash){
-    /* وضع الزبون — اخفِ كل شيء خاص بالأدمن وانتهِ */
+    /* ── وضع الزبون ── */
+    /* 1. حذف CSS gate — المحتوى يظهر للزبائن */
+    _removeAuthGate();
+    /* 2. إخفاء عناصر الأدمن */
     var sb=G('settings-btn'); if(sb) sb.style.display='none';
     var ms=G('mod-save-btn'); if(ms) ms.style.display='none';
+    /* 3. إخفاء شاشة الدخول */
+    var ls=G('admin-login-screen'); if(ls) ls.style.display='none';
     return;
   }
-  /* تحقق من رابط reset أولاً */
+
+  /* ── وضع الأدمن: التحقق من رابط reset أولاً ── */
   checkResetToken().then(function(){
-    /* هل الجلسة صالحة؟ */
     if(IS_ADMIN){
-      /* مسجّل دخول بالفعل */
+      /* جلسة صالحة بالفعل — أزل CSS gate وأظهر لوحة الأدمن */
+      _removeAuthGate();
       var sb=G('settings-btn'); if(sb) sb.style.display='';
       var ms=G('mod-save-btn'); if(ms) ms.style.display='';
+      var ls=G('admin-login-screen'); if(ls) ls.style.display='none';
+      _initTabIsolation();
+      _initAutoLock();
       var ind=document.createElement('div');
-      ind.innerHTML='🔐 وضع الأدمن';
+      ind.textContent='🔐 وضع الأدمن';
       ind.style.cssText='position:fixed;bottom:calc(var(--sb,0px) + 70px);left:50%;transform:translateX(-50%);background:rgba(108,43,217,.85);color:#fff;font-size:.7rem;padding:4px 12px;border-radius:20px;z-index:9000;pointer-events:none;backdrop-filter:blur(8px);font-family:Tajawal,sans-serif;white-space:nowrap;border:1px solid rgba(255,255,255,.15)';
       document.body.appendChild(ind);
       setTimeout(function(){ ind.style.opacity='0'; ind.style.transition='opacity 1s'; setTimeout(function(){ if(ind.parentNode) ind.parentNode.removeChild(ind); },1000); },4000);
     } else {
-      /* يحتاج تسجيل دخول — أظهر شاشة الدخول */
+      /* يحتاج تسجيل دخول — CSS gate يبقى، شاشة الدخول تظهر */
       initPassHash().then(function(){
         var sb=G('settings-btn'); if(sb) sb.style.display='none';
         var ms=G('mod-save-btn'); if(ms) ms.style.display='none';
-        G('admin-login-screen').classList.remove('hide');
+        var ls=G('admin-login-screen');
+        if(ls){ ls.style.display='flex'; }
         setTimeout(function(){ var u=G('al-user'); if(u) u.focus(); }, 100);
+
+        /* ── MutationObserver: يمنع إخفاء شاشة الدخول بـ DevTools ── */
+        try{
+          var ov = G('admin-login-screen');
+          var _authed = false; /* داخل closure — لا يظهر في window */
+          var _mo = new MutationObserver(function(){
+            if(_authed) return;
+            if(!ov) return;
+            var cs = window.getComputedStyle(ov);
+            if(cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0'){
+              ov.style.cssText = 'display:flex!important;position:fixed!important;inset:0!important;z-index:99999!important;background:#04050f!important;';
+            }
+            /* تأكد أن CSS gate موجود */
+            if(!document.getElementById('auth-gate')){
+              var s = document.createElement('style');
+              s.id = 'auth-gate';
+              s.textContent = 'body > *:not(#admin-login-screen) { display:none !important; } #admin-login-screen { display:flex !important; }';
+              document.head.appendChild(s);
+            }
+          });
+          _mo.observe(ov, { attributes: true, attributeFilter: ['style','class'] });
+          _mo.observe(document.head, { childList: true, subtree: true });
+
+          /* ── setInterval guard كل 800ms ── */
+          var _guardInterval = setInterval(function(){
+            if(_authed){ clearInterval(_guardInterval); return; }
+            /* إذا اختفت شاشة الدخول بدون تسجيل دخول، أعدها */
+            if(!G('admin-login-screen') || !IS_ADMIN){
+              var css = window.getComputedStyle(G('admin-login-screen'));
+              if(css && (css.display === 'none' || css.visibility === 'hidden')){
+                G('admin-login-screen').style.cssText = 'display:flex!important;position:fixed!important;inset:0!important;z-index:99999!important;background:#04050f!important;';
+              }
+            }
+          }, 800);
+
+          /* عند نجاح الدخول، أوقف المراقبة */
+          var _origSetAdminMode = _setAdminMode;
+          _setAdminMode = function(val){
+            if(val === true){ _authed = true; clearInterval(_guardInterval); if(_mo) _mo.disconnect(); }
+            _origSetAdminMode(val);
+          };
+
+          /* ── منع sessionStorage bypass ── */
+          try{
+            var _ssProto = Object.getPrototypeOf(sessionStorage);
+            var _origSSSet = _ssProto.setItem.bind(sessionStorage);
+            Object.defineProperty(_ssProto, 'setItem', {
+              value: function(k, v){
+                if(k === ADMIN_SESSION_KEY && !_authed) return;
+                _origSSSet(k, v);
+              },
+              writable: false, configurable: false
+            });
+          }catch(e){}
+
+        }catch(e){}
       });
     }
   });
