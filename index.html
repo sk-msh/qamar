@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <!-- Content Security Policy -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://uzqkfulbdeuzcqqnphwt.supabase.co https://api.emailjs.com https://wa.me; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://uzqkfulbdeuzcqqnphwt.supabase.co https://api.emailjs.com; font-src 'self' https://fonts.gstatic.com data:; frame-ancestors 'none'; base-uri 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://zxtlohwvjuosgxeuxvta.supabase.co https://api.emailjs.com https://wa.me https://cdn.cdnlogo.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://zxtlohwvjuosgxeuxvta.supabase.co https://api.emailjs.com; font-src 'self' https://fonts.gstatic.com data:; frame-ancestors 'none'; base-uri 'self';">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta name="referrer" content="no-referrer">
@@ -20,7 +20,7 @@
   if(isAdmin){
     var style = document.createElement('style');
     style.id = 'auth-gate';
-    style.textContent = 'body > *:not(#admin-login-screen) { display:none !important; } #admin-login-screen { display:flex !important; }';
+    style.textContent = 'body > *:not(#admin-login-screen) { display:none !important; pointer-events:none !important; } #admin-login-screen { display:flex !important; pointer-events:auto !important; z-index:999999 !important; }';
     document.head.appendChild(style);
   }
 })();
@@ -28,13 +28,14 @@
 <!-- AUTO RELOAD: تحديث تلقائي عند رفع نسخة جديدة -->
 <script>
 (function(){
-  var VER = '20260609-001'; /* ← غيّر هذا الرقم عند كل رفع جديد */
+  var VER = '20260609-002';
   var stored = localStorage.getItem('qamar_file_ver');
   if(stored && stored !== VER){
     localStorage.setItem('qamar_file_ver', VER);
-    /* hard reload يتجاوز الـ cache */
-    window.location.href = window.location.href.split('?')[0]
-      + '?v=' + VER + window.location.hash;
+    var base = window.location.href.split('?')[0].split('#')[0];
+    var hash = window.location.hash || '';
+    /* إعادة التوجيه مع الحفاظ على الـ hash */
+    window.location.replace(base + '?v=' + VER + hash);
   } else {
     localStorage.setItem('qamar_file_ver', VER);
   }
@@ -1272,10 +1273,11 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
 
 /* ── ADMIN LOGIN SCREEN ── */
 #admin-login-screen{
-  position:fixed;inset:0;z-index:99999;
+  position:fixed;inset:0;z-index:999999;
   background:#04050f;
   display:none;align-items:center;justify-content:center;
   padding:20px;
+  pointer-events:auto;
 }
 #admin-login-screen.show{display:flex}
 .al-box{
@@ -2409,20 +2411,15 @@ function _timingSafeEq(a, b){
   return diff === 0;
 }
 
-/* ════════════════════════
-   SUPABASE CONFIG
-════════════════════════ */
-var SB_URL = 'https://uzqkfulbdeuzcqqnphwt.supabase.co';
-var SB_KEY = 'sb_publishable_Zb130VooEdAkHrlFMSeLaw_CHy7q-Oq';
+var SB_URL = 'https://zxtlohwvjuosgxeuxvta.supabase.co';
+var SB_KEY = 'sb_publishable_eI3xyhJ7evi_voJecZSxbQ_8LwM735D';
 var SB_TABLE = 'qamar_config';
 var SB_ROW_ID = 'main';
-/* ════════════════════════
-   AUTH SYSTEM — نظام المصادقة الآمن
-════════════════════════ */
+var SB_AUTH_TABLE = 'qamar_auth';
 var ADMIN_USER_KEY = 'qamar_admin';
 var ADMIN_PASS_HASH_KEY = 'qamar_admin_pass_hash';
 var ADMIN_SESSION_KEY = 'qamar_admin_session';
-var ADMIN_SESSION_TTL = 8 * 60 * 60 * 1000; /* 8 ساعات */
+var ADMIN_SESSION_TTL = 60 * 60 * 1000; /* ساعة واحدة — per security report v3 */
 var RESET_EMAIL = 'shtiwem6@gmail.com';
 
 async function sha256(str){
@@ -2526,9 +2523,55 @@ async function pullFromCloud(){
     if(!res.ok) return null;
     var rows = await res.json();
     if(rows&&rows.length&&rows[0].data&&Object.keys(rows[0].data).length)
-      return _sanitizeObj(rows[0].data); /* تعقيم ضد Prototype Pollution */
+      return _sanitizeObj(rows[0].data);
   }catch(e){}
   return null;
+}
+
+/* ════════════════════════
+   SUPABASE AUTH — بيانات الدخول في Supabase
+════════════════════════ */
+var _AUTH_CACHE_KEY = 'ax_c1';
+var _AUTH_CACHE_TTL = 60 * 60 * 1000; /* ساعة */
+
+async function _loadCreds(){
+  /* 1. cache محلي بـ TTL ساعة */
+  try{
+    var cached = JSON.parse(localStorage.getItem(_AUTH_CACHE_KEY)||'null');
+    if(cached && Date.now() - cached.ts < _AUTH_CACHE_TTL) return cached.data;
+  }catch(e){}
+  /* 2. جلب من Supabase */
+  try{
+    var res2 = await sbFetch(SB_AUTH_TABLE+'?id=eq.creds&select=data');
+    if(res2.ok){
+      var rows2 = await res2.json();
+      if(rows2 && rows2[0] && rows2[0].data && rows2[0].data !== ''){
+        var cr = JSON.parse(rows2[0].data);
+        localStorage.setItem(_AUTH_CACHE_KEY, JSON.stringify({data:cr, ts:Date.now()}));
+        return cr;
+      }
+    }
+  }catch(e){}
+  /* 3. fallback: hash القديم في localStorage */
+  try{
+    var h = localStorage.getItem(ADMIN_PASS_HASH_KEY);
+    if(h) return {u: ADMIN_USER_KEY, h: h};
+  }catch(e){}
+  return null;
+}
+
+async function _saveCreds(username, passHash){
+  try{
+    var data = JSON.stringify({u: username, h: passHash});
+    await sbFetch(SB_AUTH_TABLE+'?id=eq.creds', {
+      method: 'PATCH',
+      body: JSON.stringify({data: data, updated_at: new Date().toISOString()})
+    });
+    localStorage.setItem(_AUTH_CACHE_KEY, JSON.stringify({
+      data: {u: username, h: passHash}, ts: Date.now()
+    }));
+    try{ localStorage.removeItem(ADMIN_PASS_HASH_KEY); }catch(e){}
+  }catch(e){}
 }
 
 function applyStateObj(st){
@@ -2673,7 +2716,18 @@ function adjHex(hex, a){
    LOADER
 ════════════════════════ */
 window.addEventListener('load', function(){
-  setTimeout(function(){ G('loader').classList.add('hide'); }, 1900);
+  var isAdminMode = window.location.hash === '#admin'
+                 || window.location.search.indexOf('admin') >= 0
+                 || window.location.search.indexOf('reset') >= 0;
+  /* في وضع الأدمن أخفِ الـ loader فوراً — شاشة الدخول لا تحتاجه */
+  var delay = isAdminMode ? 0 : 1200;
+  setTimeout(function(){
+    var ld = G('loader');
+    if(ld){
+      ld.classList.add('hide');
+      ld.style.pointerEvents = 'none';
+    }
+  }, delay);
 });
 
 /* ════════════════════════
@@ -4424,7 +4478,7 @@ function duplicateSub(id){
    STORAGE
 ════════════════════════ */
 function saveAll(showToast){
-  if(!IS_ADMIN) return; /* الزبائن لا يحفظون شيئاً */
+  if(!IS_ADMIN) return;
   try{
     var s={DATA:DATA, CL:CL, CATS:CATS, saveMode:SAVE_MODE, customImgs:CUSTOM_IMGS, settings:{
       siteName:G('sg-name').value, footerDesc:G('sg-desc').value, offerText:G('sg-offer').value,
@@ -4447,34 +4501,35 @@ function saveAll(showToast){
       socTw:(G('sc-tw')&&G('sc-tw').value)||'', socIg:(G('sc-ig')&&G('sc-ig').value)||'',
       socSn:(G('sc-sn')&&G('sc-sn').value)||'', socTg:(G('sc-tg')&&G('sc-tg').value)||'',
       yearlyDiscount: yearlyDiscount, ydBarEnabled: ydBarEnabled
-    }, customers: (function(){ try{ var r=localStorage.getItem(STORE_KEY); var p=r?JSON.parse(r):{}; return p.customers||[]; }catch(e){ return []; } })() };
-    localStorage.setItem(STORE_KEY, JSON.stringify(s));
+    }, customers: (function(){ try{ var existing=lsGet(STORE_KEY); return (existing&&existing.customers)||[]; }catch(e){ return []; } })() };
+    /* حفظ مشفّر عبر lsSet */
+    lsSet(STORE_KEY, s);
     var li=G('last-save-info'); if(li) li.textContent='آخر حفظ محلي: '+new Date().toLocaleTimeString('ar');
-    /* رفع السحابة */
     pushToCloud(s).then(function(){
       var li2=G('last-save-info'); if(li2) li2.textContent='☁️ محفوظ على السحابة: '+new Date().toLocaleTimeString('ar');
       if(showToast) toast('✅ تم الحفظ ومزامنة السحابة');
     }).catch(function(){ if(showToast) toast('✅ محفوظ محلياً (السحابة غير متاحة)'); });
-    if(showToast&&!IS_ADMIN) toast('✅ تم الحفظ');
-  } catch(e){ console.warn('Save error',e); }
+  } catch(e){}
 }
 function loadAll(){
-  /* أدمن: حمّل من localStorage فوراً، ثم اجلب من السحابة */
   if(IS_ADMIN){
+    /* حمّل محلياً أولاً عبر lsGet (فك التشفير تلقائي) */
     try{
-      var raw=localStorage.getItem(STORE_KEY);
-      if(raw){ applyStateObj(JSON.parse(raw)); }
+      var local = lsGet(STORE_KEY);
+      if(local) applyStateObj(_sanitizeObj(local));
     }catch(e){}
     pullFromCloud().then(function(cloudData){
       if(!cloudData) return;
-      try{ localStorage.setItem(STORE_KEY, JSON.stringify(cloudData)); applyStateObj(cloudData); }catch(e){}
+      try{ lsSet(STORE_KEY, cloudData); applyStateObj(_sanitizeObj(cloudData)); }catch(e){}
     });
     return true;
   } else {
-    /* وضع الزبون: اجلب من السحابة فقط */
     pullFromCloud().then(function(cloudData){
-      if(!cloudData){ /* fallback: localStorage إن وُجد */ try{ var r=localStorage.getItem(STORE_KEY); if(r) applyStateObj(JSON.parse(r)); }catch(e){} return; }
-      applyStateObj(cloudData);
+      if(!cloudData){
+        try{ var local2=lsGet(STORE_KEY); if(local2) applyStateObj(_sanitizeObj(local2)); }catch(e){}
+        return;
+      }
+      applyStateObj(_sanitizeObj(cloudData));
       buildCatChips(); renderCards(); applyCardText(); buildAtom(); updateCartUI();
       setTimeout(updateSavePct,300);
     });
@@ -4552,8 +4607,9 @@ function deleteCat(idx){
 function saveCats(){
   if(!IS_ADMIN) return;
   try{
-    var raw=localStorage.getItem(STORE_KEY); var st=raw?JSON.parse(raw):{};
-    st.CATS=CATS; localStorage.setItem(STORE_KEY,JSON.stringify(st));
+    var st = lsGet(STORE_KEY) || {};
+    st.CATS = CATS;
+    lsSet(STORE_KEY, st);
     pushToCloud(st);
   }catch(e){}
 }
@@ -4870,9 +4926,9 @@ function renderCustomImgsList(){
 function saveSaveMode(){
   if(!IS_ADMIN) return;
   try{
-    var raw=localStorage.getItem(STORE_KEY); var st=raw?JSON.parse(raw):{};
-    st.saveMode=SAVE_MODE; st.customImgs=CUSTOM_IMGS;
-    localStorage.setItem(STORE_KEY,JSON.stringify(st));
+    var st = lsGet(STORE_KEY) || {};
+    st.saveMode = SAVE_MODE; st.customImgs = CUSTOM_IMGS;
+    lsSet(STORE_KEY, st);
     pushToCloud(st);
   }catch(e){}
 }
@@ -4891,7 +4947,7 @@ function applySaveModeUI(){
   setSaveMode(SAVE_MODE);
 }
 
-function updateLSI(){ try{ var raw=localStorage.getItem(STORE_KEY); G('last-save-info').textContent=raw?'بيانات محفوظة ✅':'لا توجد بيانات محفوظة'; }catch(e){ G('last-save-info').textContent='التخزين غير متاح'; } }
+function updateLSI(){ try{ var d=lsGet(STORE_KEY); G('last-save-info').textContent=d?'بيانات محفوظة ✅':'لا توجد بيانات محفوظة'; }catch(e){ G('last-save-info').textContent='التخزين غير متاح'; } }
 
 function adaptModMobile(){
   if(window.innerWidth>=600) return;
@@ -4932,8 +4988,8 @@ function logoutAdmin(){
   _setAdminMode(false);
   toast('🔓 تم تسجيل الخروج'); setTimeout(function(){ location.reload(); },1200);
 }
-function exportBackup(){ if(!IS_ADMIN) return; saveAll(); try{ var raw=localStorage.getItem(STORE_KEY)||'{}'; var blob=new Blob([raw],{type:'application/json'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='qamar_backup_'+Date.now()+'.json'; a.click(); URL.revokeObjectURL(url); toast('📥 تم التصدير'); }catch(e){ toast('❌ فشل التصدير'); } }
-function importBackup(inp){ if(!IS_ADMIN) return; var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ try{ var st=_sanitizeObj(JSON.parse(e.target.result)); localStorage.setItem(STORE_KEY,JSON.stringify(st)); toast('✅ جاري إعادة التحميل...'); setTimeout(function(){ location.reload(); },1200); }catch(err){ toast('❌ ملف غير صالح'); } }; r.readAsText(f); }
+function exportBackup(){ if(!IS_ADMIN) return; saveAll(); try{ var d=lsGet(STORE_KEY)||{}; var blob=new Blob([JSON.stringify(d)],{type:'application/json'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='qamar_backup_'+Date.now()+'.json'; a.click(); URL.revokeObjectURL(url); toast('📥 تم التصدير'); }catch(e){ toast('❌ فشل التصدير'); } }
+function importBackup(inp){ if(!IS_ADMIN) return; var f=inp.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(e){ try{ var st=_sanitizeObj(JSON.parse(e.target.result)); lsSet(STORE_KEY,st); toast('✅ جاري إعادة التحميل...'); setTimeout(function(){ location.reload(); },1200); }catch(err){ toast('❌ ملف غير صالح'); } }; r.readAsText(f); }
 function resetAllData(){ if(!IS_ADMIN) return; if(!confirm('حذف كل البيانات والعودة للافتراضي؟')) return; try{ localStorage.removeItem(STORE_KEY); }catch(e){} toast('🗑️ جاري إعادة التحميل...'); setTimeout(function(){ location.reload(); },1000); }
 
 /* ════════════════════════
@@ -4963,28 +5019,27 @@ function closeWelcome(save){
 }
 function saveCustomer(nm, ph){
   try{
-    var raw=localStorage.getItem(STORE_KEY); var st=raw?JSON.parse(raw):{};
-    var custs=st.customers||[];
-    var phClean=ph.replace(/\D/g,'');
-    // remove duplicates by phone (keep newest)
-    if(phClean) custs=custs.filter(function(c){ return c.phone!==phClean; });
+    var st = lsGet(STORE_KEY) || {};
+    var custs = st.customers || [];
+    var phClean = ph.replace(/\D/g,'');
+    if(phClean) custs = custs.filter(function(c){ return c.phone !== phClean; });
     custs.push({name:nm||'', phone:phClean||ph, ts:Date.now()});
-    st.customers=custs;
-    localStorage.setItem(STORE_KEY,JSON.stringify(st));
+    st.customers = custs;
+    lsSet(STORE_KEY, st);
     renderCustomerList();
   }catch(e){}
 }
 function renderCustomerList(){
   try{
-    var raw=localStorage.getItem(STORE_KEY); if(!raw) return;
-    var st=JSON.parse(raw); var custs=(st.customers||[]).slice().reverse();
-    var q=(G('cust-search')&&G('cust-search').value||'').trim().toLowerCase();
-    if(q) custs=custs.filter(function(c){ return (c.name&&c.name.toLowerCase().includes(q))||(c.phone&&c.phone.includes(q)); });
-    var el=G('cust-list'); if(!el) return;
-    var cnt=G('cust-count'); if(cnt){ var raw2=localStorage.getItem(STORE_KEY); var st2=raw2?JSON.parse(raw2):{}; cnt.textContent=(st2.customers||[]).length+' زبون'; }
+    var st = lsGet(STORE_KEY); if(!st) return;
+    var custs = (st.customers||[]).slice().reverse();
+    var q = (G('cust-search')&&G('cust-search').value||'').trim().toLowerCase();
+    if(q) custs = custs.filter(function(c){ return (c.name&&c.name.toLowerCase().includes(q))||(c.phone&&c.phone.includes(q)); });
+    var el = G('cust-list'); if(!el) return;
+    var cnt = G('cust-count'); if(cnt){ cnt.textContent = (st.customers||[]).length + ' زبون'; }
     if(!custs.length){ el.innerHTML='<div style="text-align:center;color:var(--muted);padding:30px;font-size:.85rem">لا يوجد زبائن مسجّلين بعد</div>'; return; }
-    el.innerHTML=custs.map(function(c,i){
-      var dt=c.ts?new Date(c.ts).toLocaleString('ar'):'-';
+    el.innerHTML=custs.map(function(c){
+      var dt = c.ts ? new Date(c.ts).toLocaleString('ar') : '-';
       var safePhone = c.phone ? c.phone.replace(/\D/g,'') : '';
       return '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">'
         +'<div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">'
@@ -4995,18 +5050,16 @@ function renderCustomerList(){
         +'<div style="display:flex;gap:6px;flex-shrink:0">'
         +(safePhone?'<a href="https://wa.me/'+safePhone+'" target="_blank" rel="noopener noreferrer" style="width:30px;height:30px;border-radius:50%;background:rgba(0,230,118,.15);border:1px solid rgba(0,230,118,.3);display:flex;align-items:center;justify-content:center;color:var(--green);text-decoration:none;font-size:.85rem">💬</a>':'')
         +'<button onclick="deleteCustomer(\''+san(c.phone||'')+'\',\''+san(String(c.ts||''))+'\')" style="width:30px;height:30px;border-radius:50%;background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.25);color:var(--red);font-size:.8rem;cursor:pointer">✕</button>'
-        +'</div>'
-        +'</div>';
+        +'</div></div>';
     }).join('');
   }catch(e){}
 }
 function deleteCustomer(ph, ts){
   if(!IS_ADMIN) return;
   try{
-    var raw=localStorage.getItem(STORE_KEY); if(!raw) return;
-    var st=JSON.parse(raw);
-    st.customers=(st.customers||[]).filter(function(c){ return !(c.phone===ph&&String(c.ts)===String(ts)); });
-    localStorage.setItem(STORE_KEY,JSON.stringify(st));
+    var st = lsGet(STORE_KEY); if(!st) return;
+    st.customers = (st.customers||[]).filter(function(c){ return !(c.phone===ph && String(c.ts)===String(ts)); });
+    lsSet(STORE_KEY, st);
     renderCustomerList();
     toast('🗑️ تم حذف الزبون');
   }catch(e){}
@@ -5014,16 +5067,16 @@ function deleteCustomer(ph, ts){
 function clearAllCustomers(){
   if(!confirm('حذف جميع بيانات الزبائن؟')) return;
   try{
-    var raw=localStorage.getItem(STORE_KEY); if(!raw) return;
-    var st=JSON.parse(raw); st.customers=[];
-    localStorage.setItem(STORE_KEY,JSON.stringify(st));
+    var st = lsGet(STORE_KEY) || {};
+    st.customers = [];
+    lsSet(STORE_KEY, st);
     renderCustomerList(); toast('🗑️ تم حذف جميع الزبائن');
   }catch(e){}
 }
 function exportCustomers(){
   try{
-    var raw=localStorage.getItem(STORE_KEY); if(!raw) return;
-    var st=JSON.parse(raw); var custs=st.customers||[];
+    var st = lsGet(STORE_KEY); if(!st) return;
+    var custs = st.customers || [];
     if(!custs.length){ toast('لا يوجد بيانات للتصدير'); return; }
     var rows=['الاسم,رقم الواتساب,التاريخ'];
     custs.forEach(function(c){ rows.push('"'+(c.name||'')+'","'+(c.phone||'')+'","'+(c.ts?new Date(c.ts).toLocaleString('ar'):'')+'"'); });
@@ -5289,10 +5342,11 @@ async function doAdminLogin(){
     return;
   }
   var inputHash = await sha256(pass);
-  var storedHash = getStoredPassHash();
-  if(!storedHash){ await initPassHash(); storedHash = getStoredPassHash(); }
-  /* timing-safe comparison */
-  if(!_timingSafeEq(inputHash, storedHash)){
+  /* جلب بيانات الدخول من Supabase */
+  var cr = await _loadCreds();
+  var storedHash = cr ? cr.h : getStoredPassHash();
+  var storedUser = cr ? cr.u : ADMIN_USER_KEY;
+  if(!_timingSafeEq(inputHash, storedHash) || !_timingSafeEq(user.toLowerCase(), storedUser.toLowerCase())){
     recordFailedAttempt();
     box.classList.add('al-shake'); setTimeout(function(){ box.classList.remove('al-shake'); }, 400);
     errEl.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
@@ -5308,6 +5362,12 @@ async function doAdminLogin(){
   resetLoginAttempts();
   passEl.value = '';
   userEl.value = '';
+  /* first-run: إذا لم تكن بيانات الدخول في Supabase بعد، احفظها الآن */
+  _loadCreds().then(function(cr){
+    if(!cr || !cr.h){
+      sha256(pass).then(function(h){ _saveCreds(user, h); });
+    }
+  });
   createAdminSession();
   _setAdminMode(true);
   _removeAuthGate();
@@ -5399,47 +5459,60 @@ function _initTabIsolation(){
 }
 
 async function doSendReset(){
-  var emailEl=G('al-reset-email'), msgEl=G('al-reset-msg');
+  var emailEl=G('al-reset-email'), msgEl=G('al-reset-msg'), btn=document.querySelector('#al-reset-panel .al-btn');
   if(!emailEl||!msgEl) return;
   var email = emailEl.value.trim().toLowerCase();
   if(email !== RESET_EMAIL.toLowerCase()){ msgEl.style.color='var(--red)'; msgEl.textContent='البريد الإلكتروني غير مطابق'; return; }
-  /* توليد رمز مؤقت وحفظه */
-  var token = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-  var expiry = Date.now() + 15 * 60 * 1000; /* 15 دقيقة */
-  try{ localStorage.setItem('qamar_reset_token', JSON.stringify({token:token, exp:expiry})); }catch(e){}
-  var resetUrl = window.location.href.split('#')[0].split('?')[0] + '?reset=' + token + '#admin';
-  /* إرسال عبر EmailJS */
+  if(btn){ btn.disabled=true; btn.textContent='⏳ جاري الإرسال...'; }
+  /* توليد كلمة سر جديدة عشوائية قوية (14 حرف) */
+  var chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#!';
+  var np = '';
+  for(var i=0;i<14;i++) np += chars[Math.floor(Math.random()*chars.length)];
   msgEl.style.color='var(--muted)'; msgEl.textContent='جاري الإرسال...';
   try{
     var resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        service_id: 'qamar_email_service',
-        template_id: 'qamar_reset_template',
-        user_id: 'qamar_emailjs_public_key',
+        service_id: 'service_x3hig4w',
+        template_id: 'template_482po4q',
+        user_id: 'cQRM_T0ms67fvFjLe',
         template_params: {
           to_email: RESET_EMAIL,
-          reset_url: resetUrl,
-          expires_in: '15 دقيقة'
+          new_password: np,
+          username: ADMIN_USER_KEY,
+          timestamp: new Date().toLocaleString('ar')
         }
       })
     });
-    if(resp.ok){
-      msgEl.style.color='var(--green)'; msgEl.textContent='✅ تم الإرسال إلى ' + RESET_EMAIL;
+    if(resp.ok || resp.status === 200){
+      /* ✅ البريد أُرسل — الآن نحفظ الـ hash الجديد في Supabase */
+      var newHash = await sha256(np);
+      var cr2 = await _loadCreds();
+      await _saveCreds(cr2 ? cr2.u : ADMIN_USER_KEY, newHash);
+      try{ sessionStorage.removeItem(ADMIN_SESSION_KEY); }catch(e){}
+      msgEl.style.color='var(--green)';
+      msgEl.textContent='✅ تم إرسال كلمة السر الجديدة إلى ' + RESET_EMAIL;
+      /* إخفاء form الإرسال */
+      var form = G('al-reset-panel');
+      if(form) setTimeout(function(){ form.classList.remove('show'); },3000);
     } else {
-      /* fallback: افتح عميل البريد مباشرة */
-      var subject = encodeURIComponent('إعادة تعيين كلمة سر قمر');
-      var body = encodeURIComponent('رابط إعادة التعيين (صالح 15 دقيقة):\n\n' + resetUrl + '\n\nإذا لم تطلب هذا تجاهل الرسالة.');
-      window.open('mailto:'+RESET_EMAIL+'?subject='+subject+'&body='+body);
-      msgEl.style.color='var(--cyan)'; msgEl.textContent='📧 تم فتح تطبيق البريد — أرسل الرسالة يدوياً';
+      throw new Error('send_failed');
     }
   }catch(e){
-    var subject2 = encodeURIComponent('إعادة تعيين كلمة سر قمر');
-    var body2 = encodeURIComponent('رابط إعادة التعيين (صالح 15 دقيقة):\n\n' + resetUrl + '\n\nإذا لم تطلب هذا تجاهل الرسالة.');
-    window.open('mailto:'+RESET_EMAIL+'?subject='+subject2+'&body='+body2);
-    msgEl.style.color='var(--cyan)'; msgEl.textContent='📧 تم فتح تطبيق البريد — أرسل الرسالة يدوياً';
+    /* ❌ فشل الإرسال — لا تُحفظ كلمة السر الجديدة */
+    /* fallback: افتح mailto */
+    var subject = encodeURIComponent('كلمة سر قمر الجديدة');
+    var body = encodeURIComponent('كلمة السر الجديدة: ' + np + '\n\nاسم المستخدم: ' + ADMIN_USER_KEY + '\nالوقت: ' + new Date().toLocaleString('ar'));
+    window.open('mailto:'+RESET_EMAIL+'?subject='+subject+'&body='+body);
+    /* نحفظ الـ hash فقط بعد فتح البريد */
+    var newHash2 = await sha256(np);
+    var cr3 = await _loadCreds();
+    await _saveCreds(cr3 ? cr3.u : ADMIN_USER_KEY, newHash2);
+    try{ sessionStorage.removeItem(ADMIN_SESSION_KEY); }catch(e){}
+    msgEl.style.color='var(--cyan)'; msgEl.textContent='📧 تم فتح تطبيق البريد — أرسل الرسالة لإتمام التغيير';
   }
+  if(btn){ btn.disabled=false; btn.textContent='إرسال كلمة السر الجديدة 📧'; }
 }
 
 async function changeAdminPass(){
@@ -5451,11 +5524,15 @@ async function changeAdminPass(){
   if(newPass.length<8){ msgEl.textContent='كلمة السر الجديدة قصيرة جداً (8 أحرف على الأقل)'; return; }
   if(newPass!==confPass){ msgEl.textContent='كلمتا السر الجديدتان غير متطابقتين'; return; }
   var oldHash = await sha256(oldPass);
-  if(oldHash !== getStoredPassHash()){ msgEl.textContent='كلمة السر الحالية غير صحيحة'; return; }
+  var cr = await _loadCreds();
+  var storedH = cr ? cr.h : getStoredPassHash();
+  var storedU = cr ? cr.u : ADMIN_USER_KEY;
+  if(!_timingSafeEq(oldHash, storedH)){ msgEl.textContent='كلمة السر الحالية غير صحيحة'; return; }
   var newHash = await sha256(newPass);
-  localStorage.setItem(ADMIN_PASS_HASH_KEY, newHash);
+  /* حفظ في Supabase — يعمل على كل الأجهزة فوراً */
+  await _saveCreds(storedU, newHash);
   oldEl.value=''; newEl.value=''; confEl.value='';
-  msgEl.style.color='var(--green)'; msgEl.textContent='✅ تم تغيير كلمة السر بنجاح';
+  msgEl.style.color='var(--green)'; msgEl.textContent='✅ تم تغيير كلمة السر بنجاح على كل الأجهزة';
   setTimeout(function(){ msgEl.textContent=''; },4000);
 }
 
@@ -5477,7 +5554,8 @@ async function checkResetToken(){
     var confirmPass = prompt('أعد إدخال كلمة السر الجديدة:');
     if(newPass !== confirmPass){ alert('كلمتا السر غير متطابقتين — لم يتم التغيير.'); return; }
     var newHash = await sha256(newPass);
-    localStorage.setItem(ADMIN_PASS_HASH_KEY, newHash);
+    var crOld = await _loadCreds();
+    await _saveCreds(crOld ? crOld.u : ADMIN_USER_KEY, newHash);
     /* نظّف الرابط */
     var cleanUrl = window.location.href.split('?')[0] + '#admin';
     history.replaceState(null,'',cleanUrl);
@@ -5553,7 +5631,7 @@ async function checkResetToken(){
             if(!ov) return;
             var cs = window.getComputedStyle(ov);
             if(cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0'){
-              ov.style.cssText = 'display:flex!important;position:fixed!important;inset:0!important;z-index:99999!important;background:#04050f!important;';
+              ov.style.cssText = 'display:flex!important;position:fixed!important;inset:0!important;z-index:999999!important;background:#04050f!important;';
             }
             /* تأكد أن CSS gate موجود */
             if(!document.getElementById('auth-gate')){
@@ -5573,7 +5651,7 @@ async function checkResetToken(){
             if(!G('admin-login-screen') || !IS_ADMIN){
               var css = window.getComputedStyle(G('admin-login-screen'));
               if(css && (css.display === 'none' || css.visibility === 'hidden')){
-                G('admin-login-screen').style.cssText = 'display:flex!important;position:fixed!important;inset:0!important;z-index:99999!important;background:#04050f!important;';
+                G('admin-login-screen').style.cssText = 'display:flex!important;position:fixed!important;inset:0!important;z-index:999999!important;background:#04050f!important;';
               }
             }
           }, 800);
