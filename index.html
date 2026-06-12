@@ -5429,44 +5429,82 @@ function showResetPanel(){
 }
 
 async function doAdminLogin(){
-  var userEl=G('al-user'), passEl=G('al-pass'), errEl=G('al-err-msg'), card=G('al-card');
-  if(!userEl||!passEl) return;
+  var userEl  = G('al-user');
+  var passEl  = G('al-pass');
+  var errEl   = G('al-err-msg');
+  var card    = G('al-card');
+  var btn     = G('al-login-btn');
+
+  if(!userEl || !passEl) return;
+
+  /* Rate limit */
   if(!checkRateLimit()){
-    var remaining=Math.ceil((_loginBlockedUntil-Date.now())/60000);
-    if(errEl) errEl.textContent='🔒 انتظر '+remaining+' دقيقة';
+    var rem = Math.ceil((_loginBlockedUntil - Date.now()) / 60000);
+    if(errEl) errEl.textContent = '🔒 انتظر ' + rem + ' دقيقة';
     return;
   }
-  var user=userEl.value.trim(), pass=passEl.value;
-  if(errEl) errEl.textContent='';
-  if(!user||!pass){ if(errEl) errEl.textContent='أدخل اسم المستخدم وكلمة السر'; return; }
-  var btn=G('al-login-btn');
-  if(btn){ btn.disabled=true; btn.textContent='⏳ جاري التحقق...'; }
-  if(errEl) errEl.textContent='';
-  await new Promise(function(r){ setTimeout(r,600); });
-  var inputHash=await sha256(pass);
-  var cr=await _loadCreds();
-  var storedHash, storedUser;
-  if(cr&&cr.h){ storedHash=cr.h; storedUser=cr.u||ADMIN_USER_KEY; }
-  else { await initPassHash(); storedHash=getStoredPassHash(); storedUser=ADMIN_USER_KEY; }
-  if(user!==storedUser||!_timingSafeEq(inputHash,storedHash)){
+
+  var user = (userEl.value || '').trim();
+  var pass = passEl.value || '';
+
+  if(errEl) errEl.textContent = '';
+  if(!user || !pass){
+    if(errEl) errEl.textContent = 'أدخل اسم المستخدم وكلمة السر';
+    return;
+  }
+
+  if(btn){ btn.disabled = true; btn.textContent = '⏳'; }
+
+  /* تأخير brute-force */
+  await new Promise(function(r){ setTimeout(r, 500); });
+
+  /* تحقق اسم المستخدم */
+  if(user !== ADMIN_USER_KEY){
     recordFailedAttempt();
-    if(card){ card.classList.add('al-shake'); setTimeout(function(){ card.classList.remove('al-shake'); },400); }
-    if(errEl) errEl.textContent='اسم المستخدم أو كلمة السر غير صحيحة';
-    if(btn){ btn.disabled=false; btn.textContent='دخول'; }
+    if(errEl) errEl.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
+    if(card){ card.classList.add('al-shake'); setTimeout(function(){ card.classList.remove('al-shake'); }, 400); }
+    if(btn){ btn.disabled = false; btn.textContent = 'دخول'; }
     return;
   }
-  try{
-    var rawKey=user+'\x00'+pass+'\x00qamar_sk_lby_2026_v3';
-    var kb=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(rawKey));
-    _EK=Array.from(new Uint8Array(kb)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-  }catch(e){ _EK=null; }
+
+  /* تحقق كلمة السر */
+  var inputHash = await sha256(pass);
+
+  /* جلب الـ hash — أولاً localStorage، ثم Supabase كـ fallback */
+  var storedHash = localStorage.getItem(ADMIN_PASS_HASH_KEY) || '';
+  if(!storedHash){
+    /* حاول Supabase */
+    try{
+      var cr = await _loadCreds();
+      if(cr && cr.h) storedHash = cr.h;
+    }catch(e){}
+  }
+  if(!storedHash){
+    /* first-run: استخدم الافتراضي */
+    storedHash = await sha256('\u0071\u0061\u006d\u0061\u0072\u0032\u0030\u0032\u0035\u0061\u0064\u006d\u0069\u006e');
+    localStorage.setItem(ADMIN_PASS_HASH_KEY, storedHash);
+  }
+
+  if(!_timingSafeEq(inputHash, storedHash)){
+    recordFailedAttempt();
+    if(errEl) errEl.textContent = 'اسم المستخدم أو كلمة السر غير صحيحة';
+    if(card){ card.classList.add('al-shake'); setTimeout(function(){ card.classList.remove('al-shake'); }, 400); }
+    if(btn){ btn.disabled = false; btn.textContent = 'دخول'; }
+    return;
+  }
+
+  /* ✅ نجح الدخول */
   resetLoginAttempts();
-  if(!cr||!cr.h) _saveCreds(user,inputHash);
-  passEl.value=''; userEl.value='';
+  passEl.value = '';
+  userEl.value = '';
+
+  /* احفظ في Supabase في الخلفية */
+  try{ _saveCreds(user, inputHash).catch(function(){}); }catch(e){}
+
   createAdminSession();
   _setAdminMode(true);
   _removeAuthGate();
-  G('admin-login-screen').style.display='none';
+  G('admin-login-screen').style.display = 'none';
   initAfterAuth();
 }
 
@@ -5661,136 +5699,92 @@ async function checkResetToken(){
 }
 
 /* ════════════════════════
-   AUTH INIT — يعمل عند تحميل الصفحة
+   AUTH INIT — نظيف ومبسط
 ════════════════════════ */
 (function(){
 
-  /* ── Anti-Clickjacking runtime check ── */
+  /* Anti-Clickjacking */
   try{
     if(window.top !== window.self){
-      var topOrigin = '';
-      try{ topOrigin = window.top.location.origin; }catch(e){ topOrigin = 'cross-origin'; }
-      var selfOrigin = window.self.location.origin;
-      var sameOrigin = (topOrigin === selfOrigin)
-                    || (selfOrigin === 'null')
-                    || (topOrigin === 'null')
-                    || (selfOrigin.indexOf('file:') === 0);
-      if(!sameOrigin){ window.top.location = window.self.location; }
+      try{ if(window.top.location.origin !== window.self.location.origin) window.top.location = window.self.location; }catch(e){ window.top.location = window.self.location; }
     }
   }catch(e){}
 
-  var hasAdminHash = window.location.hash === '#admin'
-                  || window.location.search.indexOf('admin') >= 0
-                  || window.location.search.indexOf('reset') >= 0;
+  var hasAdmin = window.location.hash === '#admin'
+              || window.location.search.indexOf('admin') >= 0;
 
-  if(!hasAdminHash){
-    /* ── وضع الزبون ── */
-    /* 1. حذف CSS gate — المحتوى يظهر للزبائن */
+  /* ── وضع الزبون ── */
+  if(!hasAdmin){
     _removeAuthGate();
-    /* 2. إخفاء عناصر الأدمن */
     var sb=G('settings-btn'); if(sb) sb.style.display='none';
     var ms=G('mod-save-btn'); if(ms) ms.style.display='none';
-    /* 3. إخفاء شاشة الدخول */
     var ls=G('admin-login-screen'); if(ls) ls.style.display='none';
     return;
   }
 
-  /* ── وضع الأدمن: التحقق من رابط reset أولاً ── */
-  checkResetToken().then(function(){
-    if(IS_ADMIN){
-      /* جلسة صالحة بالفعل — أزل CSS gate وأظهر لوحة الأدمن */
-      _removeAuthGate();
-      var sb=G('settings-btn'); if(sb) sb.style.display='';
-      var ms=G('mod-save-btn'); if(ms) ms.style.display='';
-      var ls=G('admin-login-screen'); if(ls) ls.style.display='none';
-      _initTabIsolation();
-      _initAutoLock();
-      var ind=document.createElement('div');
-      ind.textContent='🔐 وضع الأدمن';
-      ind.style.cssText='position:fixed;bottom:calc(var(--sb,0px) + 70px);left:50%;transform:translateX(-50%);background:rgba(108,43,217,.85);color:#fff;font-size:.7rem;padding:4px 12px;border-radius:20px;z-index:9000;pointer-events:none;backdrop-filter:blur(8px);font-family:Tajawal,sans-serif;white-space:nowrap;border:1px solid rgba(255,255,255,.15)';
-      document.body.appendChild(ind);
-      setTimeout(function(){ ind.style.opacity='0'; ind.style.transition='opacity 1s'; setTimeout(function(){ if(ind.parentNode) ind.parentNode.removeChild(ind); },1000); },4000);
-    } else {
-      /* يحتاج تسجيل دخول — CSS gate يبقى، شاشة الدخول تظهر */
-      initPassHash().then(function(){
-        var sb=G('settings-btn'); if(sb) sb.style.display='none';
-        var ms=G('mod-save-btn'); if(ms) ms.style.display='none';
-        var ls=G('admin-login-screen');
-        if(ls) ls.style.display='flex';
+  /* ── وضع الأدمن ── */
 
-        /* ربط الأزرار بـ addEventListener — أكثر موثوقية من onclick */
-        var loginBtn = G('al-login-btn');
-        var eyeBtn   = G('al-eye-btn');
-        var fgtLink  = G('al-fgt-link');
-        var resetBtn = G('al-reset-btn');
-        var passInp  = G('al-pass');
+  /* جلسة صالحة؟ */
+  if(isAdminSessionValid()){
+    _removeAuthGate();
+    _setAdminMode(true);
+    var sb2=G('settings-btn'); if(sb2) sb2.style.display='';
+    var ms2=G('mod-save-btn'); if(ms2) ms2.style.display='';
+    var ls2=G('admin-login-screen'); if(ls2) ls2.style.display='none';
+    _initTabIsolation();
+    _initAutoLock();
+    return;
+  }
 
-        if(loginBtn) loginBtn.addEventListener('click', doAdminLogin);
-        if(eyeBtn)   eyeBtn.addEventListener('click', togglePassVis);
-        if(fgtLink)  fgtLink.addEventListener('click', showResetPanel);
-        if(resetBtn) resetBtn.addEventListener('click', doSendReset);
-        if(passInp)  passInp.addEventListener('keydown', function(e){ if(e.key==='Enter') doAdminLogin(); });
+  /* يحتاج تسجيل دخول */
+  var sb3=G('settings-btn'); if(sb3) sb3.style.display='none';
+  var ms3=G('mod-save-btn'); if(ms3) ms3.style.display='none';
+  var loginScreen = G('admin-login-screen');
+  if(loginScreen) loginScreen.style.display='flex';
 
-        setTimeout(function(){ var u=G('al-user'); if(u) u.focus(); }, 150);
-
-        /* ── MutationObserver: يمنع إخفاء شاشة الدخول بـ DevTools ── */
-        try{
-          var ov = G('admin-login-screen');
-          var _authed = false; /* داخل closure — لا يظهر في window */
-          var _mo = new MutationObserver(function(){
-            if(_authed) return;
-            if(!ov) return;
-            var cs = window.getComputedStyle(ov);
-            if(cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0'){
-              ov.style.cssText = 'display:flex!important;position:fixed!important;inset:0!important;z-index:999999!important;background:#04050f!important;';
-            }
-            /* تأكد أن CSS gate موجود */
-            if(!document.getElementById('auth-gate')){
-              var s = document.createElement('style');
-              s.id = 'auth-gate';
-              s.textContent = 'body > *:not(#admin-login-screen) { display:none !important; } #admin-login-screen { display:flex !important; }';
-              document.head.appendChild(s);
-            }
-          });
-          _mo.observe(ov, { attributes: true, attributeFilter: ['style','class'] });
-          _mo.observe(document.head, { childList: true, subtree: true });
-
-          /* ── setInterval guard كل 800ms ── */
-          var _guardInterval = setInterval(function(){
-            if(_authed){ clearInterval(_guardInterval); return; }
-            /* إذا اختفت شاشة الدخول بدون تسجيل دخول، أعدها */
-            if(!G('admin-login-screen') || !IS_ADMIN){
-              var css = window.getComputedStyle(G('admin-login-screen'));
-              if(css && (css.display === 'none' || css.visibility === 'hidden')){
-                G('admin-login-screen').style.cssText = 'display:flex!important;position:fixed!important;inset:0!important;z-index:999999!important;background:#04050f!important;';
-              }
-            }
-          }, 800);
-
-          /* عند نجاح الدخول، أوقف المراقبة */
-          var _origSetAdminMode = _setAdminMode;
-          _setAdminMode = function(val){
-            if(val === true){ _authed = true; clearInterval(_guardInterval); if(_mo) _mo.disconnect(); }
-            _origSetAdminMode(val);
-          };
-
-          /* ── منع sessionStorage bypass ── */
-          try{
-            var _ssProto = Object.getPrototypeOf(sessionStorage);
-            var _origSSSet = _ssProto.setItem.bind(sessionStorage);
-            Object.defineProperty(_ssProto, 'setItem', {
-              value: function(k, v){
-                if(k === ADMIN_SESSION_KEY && !_authed) return;
-                _origSSSet(k, v);
-              },
-              writable: false, configurable: false
-            });
-          }catch(e){}
-
-        }catch(e){}
-      });
+  /* تأكد من وجود hash كلمة السر الافتراضية */
+  sha256('\u0071\u0061\u006d\u0061\u0072\u0032\u0030\u0032\u0035\u0061\u0064\u006d\u0069\u006e').then(function(defaultHash){
+    if(!localStorage.getItem(ADMIN_PASS_HASH_KEY)){
+      localStorage.setItem(ADMIN_PASS_HASH_KEY, defaultHash);
     }
   });
+
+  /* ربط الأزرار */
+  setTimeout(function(){
+    var loginBtn = G('al-login-btn');
+    var eyeBtn   = G('al-eye-btn');
+    var fgtLink  = G('al-fgt-link');
+    var resetBtn = G('al-reset-btn');
+    var passInp  = G('al-pass');
+    var userInp  = G('al-user');
+
+    if(loginBtn) loginBtn.addEventListener('click', doAdminLogin);
+    if(eyeBtn)   eyeBtn.addEventListener('click', togglePassVis);
+    if(fgtLink)  fgtLink.addEventListener('click', showResetPanel);
+    if(resetBtn) resetBtn.addEventListener('click', doSendReset);
+    if(passInp)  passInp.addEventListener('keydown', function(e){ if(e.key==='Enter') doAdminLogin(); });
+    if(userInp)  userInp.addEventListener('keydown', function(e){ if(e.key==='Enter') G('al-pass').focus(); });
+    if(userInp)  userInp.focus();
+  }, 200);
+
+  /* Session integrity check كل دقيقة */
+  setInterval(function(){
+    if(IS_ADMIN && !isAdminSessionValid()){
+      _setAdminMode(false);
+      destroyAdminSession();
+      location.reload();
+    }
+  }, 60000);
+
+  /* Anti-DevTools: console disabled */
+  if(window.location.protocol === 'https:'){
+    var noop = function(){};
+    ['log','debug','info','warn','error','dir','table','trace','group','groupCollapsed','groupEnd','time','timeEnd','assert','clear'].forEach(function(m){ try{ console[m]=noop; }catch(e){} });
+  }
+
+  /* Right-click disabled for customers */
+  document.addEventListener('contextmenu', function(e){ if(!IS_ADMIN) e.preventDefault(); });
+
 })();
 </script>
 </body>
