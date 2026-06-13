@@ -28,14 +28,12 @@
 <!-- AUTO RELOAD: تحديث تلقائي عند رفع نسخة جديدة -->
 <script>
 (function(){
-  var VER = '20260612-003';
+  var VER = '20260612-005';
   var stored = localStorage.getItem('qamar_file_ver');
   if(stored && stored !== VER){
     localStorage.setItem('qamar_file_ver', VER);
-    var base = window.location.href.split('?')[0].split('#')[0];
-    var hash = window.location.hash || '';
-    /* إعادة التوجيه مع الحفاظ على الـ hash */
-    window.location.replace(base + '?v=' + VER + hash);
+    /* استخدم hard reload بدون تغيير الرابط لحفظ الـ hash */
+    window.location.reload(true);
   } else {
     localStorage.setItem('qamar_file_ver', VER);
   }
@@ -1321,10 +1319,12 @@ footer{background:rgba(4,5,15,.98);border-top:1px solid var(--border);padding:40
 #al-card .al-pw-wrap .al-inp{padding-right:42px;}
 #al-card .al-pw-eye{
   position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  background:none;border:none;color:#6a5a9a;font-size:.95rem;
-  cursor:pointer;padding:4px;line-height:1;
-  pointer-events:all;
+  background:none;border:none;color:#6a5a9a;font-size:1rem;
+  cursor:pointer;padding:6px;line-height:1;
+  pointer-events:all;z-index:10;
 }
+#al-card .al-pw-wrap{ position:relative; }
+#al-card .al-pw-wrap .al-inp{ padding-right:44px; }
 #al-card .al-group{margin-bottom:14px;}
 #al-card .al-submit{
   width:100%;margin-top:8px;padding:13px;
@@ -2489,19 +2489,19 @@ function resetLoginAttempts(){ _loginAttempts = 0; _loginBlockedUntil = 0; }
 
 function isAdminSessionValid(){
   try{
-    var sess = JSON.parse(sessionStorage.getItem(ADMIN_SESSION_KEY)||'null');
+    var sess = JSON.parse(localStorage.getItem(ADMIN_SESSION_KEY)||'null');
     if(!sess) return false;
-    if(Date.now() - sess.ts > ADMIN_SESSION_TTL){ sessionStorage.removeItem(ADMIN_SESSION_KEY); return false; }
+    if(Date.now() - sess.ts > ADMIN_SESSION_TTL){ localStorage.removeItem(ADMIN_SESSION_KEY); return false; }
     return sess.valid === true;
   }catch(e){ return false; }
 }
 
 function createAdminSession(){
-  try{ sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({valid:true, ts:Date.now()})); }catch(e){}
+  try{ localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({valid:true, ts:Date.now()})); }catch(e){}
 }
 
 function destroyAdminSession(){
-  try{ sessionStorage.removeItem(ADMIN_SESSION_KEY); }catch(e){}
+  try{ localStorage.removeItem(ADMIN_SESSION_KEY); }catch(e){}
   try{ localStorage.removeItem('qamar_admin_mode'); }catch(e){}
 }
 
@@ -5516,8 +5516,20 @@ function initAfterAuth(){
   /* إظهار زر الإعدادات وزر حفظ البطاقة */
   var sb=G('settings-btn'); if(sb) sb.style.display='';
   var ms=G('mod-save-btn'); if(ms) ms.style.display='';
-  /* تحميل البيانات */
-  loadAll(); buildCatChips(); renderCards(); applyCardText(); updateCartUI(); buildAtom();
+  /* تحميل البيانات من localStorage أولاً — فوري */
+  try{
+    var local = lsGet(STORE_KEY);
+    if(local) applyStateObj(_sanitizeObj(local));
+  }catch(e){}
+  buildCatChips(); renderCards(); applyCardText(); updateCartUI(); buildAtom();
+  /* تحميل من السحابة في الخلفية */
+  setTimeout(function(){
+    pullFromCloud().then(function(cloudData){
+      if(!cloudData) return;
+      try{ lsSet(STORE_KEY, cloudData); applyStateObj(_sanitizeObj(cloudData)); }catch(e){}
+      buildCatChips(); renderCards(); applyCardText(); updateCartUI();
+    }).catch(function(){});
+  }, 500);
   /* تفعيل Tab Isolation */
   _initTabIsolation();
   /* تفعيل Auto-Lock عند الخمول */
